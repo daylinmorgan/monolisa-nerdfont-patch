@@ -1,0 +1,6 @@
+*.zip
+
+MonoLisa/*
+patched/*
+
+!**/.gitkeep
