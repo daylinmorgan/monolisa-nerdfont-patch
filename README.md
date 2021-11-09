@@ -1,6 +1,6 @@
 # MonoLisa NF
 
-Batteries inlcuded repo to patch MonoLisa with Nerd Fonts glyphs
+*Most* Batteries inlcuded repo to patch MonoLisa with Nerd Fonts glyphs
 
 ## Before You Begin
 
@@ -21,8 +21,15 @@ Then extract the `.zip` into `MonoLisa/`.
 Once you have downloaded MonoLisa and `fontforge`
 you can easily apply the nerd font patches using the `patch-monolisa` script.
 The only required argument is the font file extension you want to patch. 
-All remiaining supplied arguments are passed to the `font-patcher` script.
+All remaining supplied arguments are passed to the `font-patcher` script.
 
 ```bash
 ./patch-monolisa otf -c -w
 ```
+
+You can find your patched fonts in the `patched/` directory
+
+## Special Thanks
+
+- [MonoLisa](monolisa.dev)
+- [Nerd Fonts](nerdfonts.com)
