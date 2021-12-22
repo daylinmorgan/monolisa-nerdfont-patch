@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+REPO_URL=git@github.com:ryanoasis/nerd-fonts.git
+
+rm -f nerd-fonts
+
+git clone --filter=blob:none --no-checkout --depth 1 --sparse $REPO_URL
+cd nerd-fonts
+git sparse-checkout add src/glyphs
+git checkout
+
+cp font-patcher ../font-patcher
+cp src/glyphs/** ../src/glyphs -r
+
+echo "don't forget to commit your changes!"
