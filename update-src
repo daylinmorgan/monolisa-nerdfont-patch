@@ -2,7 +2,7 @@
 
 REPO_URL=git@github.com:ryanoasis/nerd-fonts.git
 
-rm -f nerd-fonts
+rm -rf nerd-fonts
 
 git clone --filter=blob:none --no-checkout --depth 1 --sparse $REPO_URL
 cd nerd-fonts
