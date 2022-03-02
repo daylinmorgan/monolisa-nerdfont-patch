@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-
 exts=(otf ttf woff woff2)
 ext=$1
 shift
 fp_args=$@
 
-if [[ -z "$ext" ]];then
+if [[ -z $ext ]]; then
 	echo "please provide an extension"
 	exit 1
 fi
@@ -21,10 +20,8 @@ fi
 echo "Patching all fonts with ext -> $ext"
 echo "Using the following arguments for font-patcher $fp_args"
 
-
 for fontfile in MonoLisa/$ext/*.$ext; do
 
 	fontforge -script font-patcher $fontfile -o patched/$ext $fp_args
 
 done
-
