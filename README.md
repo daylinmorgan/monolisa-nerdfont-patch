@@ -29,7 +29,13 @@ All remaining supplied arguments are passed to the `font-patcher` script.
 
 You can find your patched fonts in the `patched/` directory
 
+If like me you want to place your patched fonts in a standard location on your Unix system you can move them to `~/.local/share/fonts/MonoLisa` with the `update-fonts` script.
+
+## Changing the Batteries
+
+If I haven't committed to this repo in a while it's likely a good idea to run `update-src` to update the fonts, icons and patcher script.
+
 ## Special Thanks
 
-- [MonoLisa](monolisa.dev)
-- [Nerd Fonts](nerdfonts.com)
+- [MonoLisa](https://www.monolisa.dev)
+- [Nerd Fonts](https://www.nerdfonts.com)
