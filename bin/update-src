@@ -9,7 +9,7 @@ cd nerd-fonts
 git sparse-checkout add src/glyphs
 git checkout
 
-cp font-patcher ../font-patcher
+cp font-patcher ../bin/font-patcher
 cp src/glyphs/** ../src/glyphs -r
 
 echo "don't forget to commit your changes!"

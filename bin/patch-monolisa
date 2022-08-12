@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 exts=(otf ttf woff woff2)
 ext=$1
@@ -22,6 +23,6 @@ echo "Using the following arguments for font-patcher $fp_args"
 
 for fontfile in MonoLisa/$ext/*.$ext; do
 
-	fontforge -script font-patcher $fontfile -o patched/$ext $fp_args
+	fontforge -script ./bin/font-patcher $fontfile --glyphdir ./src/glyphs/ -o ./patched/$ext $fp_args
 
 done

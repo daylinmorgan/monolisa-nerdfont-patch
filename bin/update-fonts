@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
 
+set -e
+
 PATCHED_FONTS=./patched
 INSTALL_DIR=~/.local/share/fonts/MonoLisa
+
+mkdir -p $INSTALL_DIR
 
 for font_dir in $PATCHED_FONTS/*; do
 	patched_dir="${font_dir##*/}"
 	echo ">>> $patched_dir"
 
-	if [[ -d "${INSTALL_DIR}/${patched_dir}" ]]; then
+	dest=$INSTALL_DIR/$patched_dir
+
+	if [[ -d ${dest} ]]; then
 		echo "deleting existing version"
-		rm -rf $INSTALL_DIR/$patched_dir
+		rm -rf $dest
 	fi
 
-	dest=$INSTALL_DIR/$patched_dir
 	mkdir $dest && cp -v $font_dir/* $dest
 done
 
