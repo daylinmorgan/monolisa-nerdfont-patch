@@ -4,6 +4,10 @@
 
 tested w/ MonoLisa v1.808
 
+<p align="center">
+<img src="./assets/help.svg" width=400>
+</p>
+
 ## Before You Begin
 
 First you will need to install `fontforge`

@@ -1,0 +1,111 @@
+<svg class="rich-terminal shadow" viewBox="0 0 585.3333333333334 399.5333333333333" xmlns="http://www.w3.org/2000/svg">
+    <!-- Generated with Rich https://www.textualize.io -->
+    <style>
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Regular"),
+            url("https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@2.1.0/patched-fonts/FiraCode/Regular/complete/Fira%20Code%20Regular%20Nerd%20Font%20Complete.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 400;
+    }
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Bold"),
+            url("https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@2.1.0/patched-fonts/FiraCode/Bold/complete/Fira%20Code%20Bold%20Nerd%20Font%20Complete.ttf") format("truetype");
+        font-style: bold;
+        font-weight: 700;
+    }
+
+    .terminal-747138606-matrix {
+        font-family: Fira Code, monospace;
+        font-size: 20px;
+        line-height: 24.4px;
+        font-variant-east-asian: full-width;
+    }
+
+    .terminal-747138606-title {
+        font-size: 18px;
+        font-weight: bold;
+        font-family: arial;
+    }
+
+    .shadow {
+        -webkit-filter: drop-shadow( 2px 5px 2px rgba(0, 0, 0, .7));
+        filter: drop-shadow( 2px 5px 2px rgba(0, 0, 0, .7));
+    }
+    .terminal-747138606-r1 { fill: #a6e3a1;font-weight: bold }
+.terminal-747138606-r2 { fill: #c6d0f5 }
+.terminal-747138606-r3 { fill: #94e2d5;font-weight: bold }
+.terminal-747138606-r4 { fill: #f9e2af;font-weight: bold }
+.terminal-747138606-r5 { fill: #8288a5 }
+    </style>
+
+    <defs>
+    <clipPath id="terminal-747138606-clip-terminal">
+      <rect x="0" y="0" width="548.0" height="316.2" />
+    </clipPath>
+    <clipPath id="terminal-747138606-line-0">
+    <rect x="0" y="1.5" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-1">
+    <rect x="0" y="25.9" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-2">
+    <rect x="0" y="50.3" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-3">
+    <rect x="0" y="74.7" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-4">
+    <rect x="0" y="99.1" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-5">
+    <rect x="0" y="123.5" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-6">
+    <rect x="0" y="147.9" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-7">
+    <rect x="0" y="172.3" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-8">
+    <rect x="0" y="196.7" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-9">
+    <rect x="0" y="221.1" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-10">
+    <rect x="0" y="245.5" width="549" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-747138606-line-11">
+    <rect x="0" y="269.9" width="549" height="24.65"/>
+            </clipPath>
+    </defs>
+
+    <rect fill="#1e1e2e" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="10.1667" y="1" width="565" height="365.2" rx="8"/><text class="terminal-747138606-title" fill="#c6d0f5" text-anchor="middle" x="282" y="27">help</text>
+            <g transform="translate(32,22)">
+            <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
+            <circle cx="22" cy="0" r="7" fill="#febc2e"/>
+            <circle cx="44" cy="0" r="7" fill="#28c840"/>
+            </g>
+        
+    <g transform="translate(18.166666666666664, 41) scale(.95)" clip-path="url(#terminal-747138606-clip-terminal)">
+    
+    <g class="terminal-747138606-matrix">
+    <text class="terminal-747138606-r1" x="0" y="20" textLength="402.6" clip-path="url(#terminal-747138606-line-0)">Update&#160;MonoLisa&#160;with&#160;Nerd&#160;Fonts!&#160;</text><text class="terminal-747138606-r2" x="549" y="20" textLength="12.2" clip-path="url(#terminal-747138606-line-0)">
+</text><text class="terminal-747138606-r2" x="549" y="44.4" textLength="12.2" clip-path="url(#terminal-747138606-line-1)">
+</text><text class="terminal-747138606-r3" x="0" y="68.8" textLength="61" clip-path="url(#terminal-747138606-line-2)">usage</text><text class="terminal-747138606-r2" x="61" y="68.8" textLength="12.2" clip-path="url(#terminal-747138606-line-2)">:</text><text class="terminal-747138606-r2" x="549" y="68.8" textLength="12.2" clip-path="url(#terminal-747138606-line-2)">
+</text><text class="terminal-747138606-r2" x="97.6" y="93.2" textLength="158.6" clip-path="url(#terminal-747138606-line-3)">make&#160;&lt;recipe&gt;</text><text class="terminal-747138606-r2" x="549" y="93.2" textLength="12.2" clip-path="url(#terminal-747138606-line-3)">
+</text><text class="terminal-747138606-r2" x="549" y="117.6" textLength="12.2" clip-path="url(#terminal-747138606-line-4)">
+</text><text class="terminal-747138606-r4" x="0" y="142" textLength="146.4" clip-path="url(#terminal-747138606-line-5)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;patch</text><text class="terminal-747138606-r2" x="146.4" y="142" textLength="36.6" clip-path="url(#terminal-747138606-line-5)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="142" textLength="317.2" clip-path="url(#terminal-747138606-line-5)">add&#160;nerd&#160;fonts&#160;to&#160;MonoLisa</text><text class="terminal-747138606-r2" x="549" y="142" textLength="12.2" clip-path="url(#terminal-747138606-line-5)">
+</text><text class="terminal-747138606-r4" x="0" y="166.4" textLength="146.4" clip-path="url(#terminal-747138606-line-6)">update-fonts</text><text class="terminal-747138606-r2" x="146.4" y="166.4" textLength="36.6" clip-path="url(#terminal-747138606-line-6)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="166.4" textLength="366" clip-path="url(#terminal-747138606-line-6)">move&#160;fonts&#160;and&#160;update&#160;fc-cache</text><text class="terminal-747138606-r2" x="549" y="166.4" textLength="12.2" clip-path="url(#terminal-747138606-line-6)">
+</text><text class="terminal-747138606-r4" x="0" y="190.8" textLength="146.4" clip-path="url(#terminal-747138606-line-7)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;check</text><text class="terminal-747138606-r2" x="146.4" y="190.8" textLength="36.6" clip-path="url(#terminal-747138606-line-7)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="190.8" textLength="317.2" clip-path="url(#terminal-747138606-line-7)">check&#160;fc-list&#160;for&#160;MonoLisa</text><text class="terminal-747138606-r2" x="549" y="190.8" textLength="12.2" clip-path="url(#terminal-747138606-line-7)">
+</text><text class="terminal-747138606-r4" x="0" y="215.2" textLength="146.4" clip-path="url(#terminal-747138606-line-8)">&#160;&#160;update-src</text><text class="terminal-747138606-r2" x="146.4" y="215.2" textLength="36.6" clip-path="url(#terminal-747138606-line-8)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="215.2" textLength="292.8" clip-path="url(#terminal-747138606-line-8)">update&#160;nerd&#160;fonts&#160;source</text><text class="terminal-747138606-r2" x="549" y="215.2" textLength="12.2" clip-path="url(#terminal-747138606-line-8)">
+</text><text class="terminal-747138606-r4" x="0" y="239.6" textLength="146.4" clip-path="url(#terminal-747138606-line-9)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;lint</text><text class="terminal-747138606-r2" x="146.4" y="239.6" textLength="36.6" clip-path="url(#terminal-747138606-line-9)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="239.6" textLength="231.8" clip-path="url(#terminal-747138606-line-9)">check&#160;shell&#160;scripts</text><text class="terminal-747138606-r2" x="549" y="239.6" textLength="12.2" clip-path="url(#terminal-747138606-line-9)">
+</text><text class="terminal-747138606-r4" x="0" y="264" textLength="146.4" clip-path="url(#terminal-747138606-line-10)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;clean</text><text class="terminal-747138606-r2" x="146.4" y="264" textLength="36.6" clip-path="url(#terminal-747138606-line-10)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="264" textLength="244" clip-path="url(#terminal-747138606-line-10)">remove&#160;patched&#160;fonts</text><text class="terminal-747138606-r2" x="549" y="264" textLength="12.2" clip-path="url(#terminal-747138606-line-10)">
+</text><text class="terminal-747138606-r4" x="0" y="288.4" textLength="146.4" clip-path="url(#terminal-747138606-line-11)">&#160;&#160;&#160;&#160;&#160;h,&#160;help</text><text class="terminal-747138606-r2" x="146.4" y="288.4" textLength="36.6" clip-path="url(#terminal-747138606-line-11)">&#160;|&#160;</text><text class="terminal-747138606-r5" x="183" y="288.4" textLength="170.8" clip-path="url(#terminal-747138606-line-11)">show&#160;this&#160;help</text><text class="terminal-747138606-r2" x="549" y="288.4" textLength="12.2" clip-path="url(#terminal-747138606-line-11)">
+</text><text class="terminal-747138606-r2" x="549" y="312.8" textLength="12.2" clip-path="url(#terminal-747138606-line-12)">
+</text>
+    </g>
+    </g>
+</svg>
