@@ -1,6 +1,6 @@
 # MonoLisa NF
 
-*Most* Batteries inlcuded repo to patch MonoLisa with Nerd Fonts glyphs
+*Most* Batteries included repo to patch MonoLisa with Nerd Fonts glyphs
 
 tested w/ MonoLisa v1.808
 
