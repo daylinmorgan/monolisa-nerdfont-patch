@@ -45,13 +45,5 @@ lint:
 clean:
 	@rm -r patched/*
 
-define USAGE
-{a.b_green}Update MonoLisa with Nerd Fonts! {a.end}
-
-{a.$(HEADER_COLOR)}usage{a.end}:
-	make <recipe>
-
-endef
-
+USAGE = {a.b_green}Update MonoLisa with Nerd Fonts! {a.end}\n\n{a.$(HEADER_STYLE)}usage{a.end}:\n	make <recipe>\n
 -include .task.mk
-$(if $(filter help,$(MAKECMDGOALS)),.task.mk: ; curl -fsSL https://raw.githubusercontent.com/daylinmorgan/task.mk/v22.9.5/task.mk -o .task.mk)
