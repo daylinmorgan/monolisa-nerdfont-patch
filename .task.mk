@@ -1,7 +1,7 @@
 # }> [github.com/daylinmorgan/task.mk] <{ #
 # Copyright (c) 2022 Daylin Morgan
 # MIT License
-# version: 22.9.19
+# version: v22.9.19-5-g5f593e3-dev
 #
 # task.mk should be included at the bottom of your Makefile with `-include .task.mk`
 # See below for the standard configuration options that should be set prior to including this file.
@@ -18,7 +18,12 @@ HELP_SEP ?= │
 # python f-string literals
 EPILOG ?=
 USAGE ?={ansi.$(HEADER_STYLE)}usage{ansi.end}:\n  make <recipe>\n
-# ---- [buitlin recipes] ---- #
+INHERIT_SHELL ?=
+# ---- [builtin recipes] ---- #
+ifeq (help,$(firstword $(MAKECMDGOALS)))
+  HELP_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+	export HELP_ARGS
+endif
 ## h, help | show this help
 .PHONY: help h
 help h:
@@ -47,29 +52,32 @@ _update-task.mk:
 	$(call tprint,{a.b_cyan}Updating task.mk{a.end})
 	curl https://raw.githubusercontent.com/daylinmorgan/task.mk/main/task.mk -o .task.mk
 export MAKEFILE_LIST
+ifndef INHERIT_SHELL
+SHELL := /bin/bash
+endif
 # ---- [python/bash script runner] ---- #
-define \n
+define _newline
 
 
 endef
-escape_shellstring = $(subst `,\`,$(subst ",\",$(subst $$,\$$,$(subst \,\\,$1))))
-escape_printf = $(subst \,\\,$(subst %,%%,$1))
-create_string = $(subst $(\n),\n,$(call escape_shellstring,$(call escape_printf,$1)))
-printline = printf -- "<----------------------------------->\n"
+_escape_shellstring = $(subst `,\`,$(subst ",\",$(subst $$,\$$,$(subst \,\\,$1))))
+_escape_printf = $(subst \,\\,$(subst %,%%,$1))
+_create_string = $(subst $(_newline),\n,$(call _escape_shellstring,$(call _escape_printf,$1)))
+_printline = printf -- "<----------------------------------->\n"
 ifdef DEBUG
 define _debug_runner
-@printf "$(1) Script:\n";$(printline);
-@printf "$(call create_string,$(3))\n" | cat -n
-@$(printline)
-@printf "$(call create_string,$(3))" | $(2)
+@printf "$(1) Script:\n";$(_printline);
+@printf "$(call _create_string,$(3))\n" | cat -n
+@$(_printline)
+@$(2) <(printf "$(call _create_string,$(3))")
 endef
 py = $(call _debug_runner,Python,python3,$($(1)))
 tbash = $(call _debug_runner,Bash,bash,$($(1)))
 else
-py = @python3 <(printf "$(call create_string,$($(1)))")
-tbash = @bash <(printf "$(call create_string,$($(1)))")
+py = @python3 <(printf "$(call _create_string,$($(1)))")
+tbash = @bash <(printf "$(call _create_string,$($(1)))")
 endif
-pysh = python3 <(printf "$(call create_string,$($(1)))")
+pysh = python3 <(printf "$(call _create_string,$($(1)))")
 # ---- [python scripts] ---- #
 define  help_py
 import argparse
@@ -77,10 +85,12 @@ from collections import namedtuple
 import os
 import re
 $(ansi_py)
+$(quit_make_py)
 MaxLens = namedtuple("MaxLens", "goal msg")
 pattern = re.compile(
     r"^## (?P<goal>.*?) \| (?P<msg>.*?)(?:\s?\| args: (?P<msgargs>.*?))?$$|^### (?P<rawmsg>.*?)?(?:\s?\| args: (?P<rawargs>.*?))?$$"
 )
+goal_pattern = re.compile(r"""^(?!#|\t)(.*):.*\n\t""", re.MULTILINE)
 def parseargs(argstring):
     parser = argparse.ArgumentParser()
     parser.add_argument("--align")
@@ -96,16 +106,51 @@ def gen_makefile():
         with open(file, "r") as f:
             makefile += f.read() + "\n\n"
     return makefile
-def parse_make(file):
+def parse_help(file, hidden=False):
     for line in file.splitlines():
         match = pattern.search(line)
         if match:
-            if not os.getenv("SHOW_HIDDEN") and str(
-                match.groupdict().get("goal")
-            ).startswith("_"):
+            if (
+                not hidden
+                and not os.getenv("SHOW_HIDDEN")
+                and str(match.groupdict().get("goal")).startswith("_")
+            ):
                 pass
             else:
                 yield {k: v for k, v in match.groupdict().items() if v is not None}
+def recipe_help_header(goal):
+    item = [
+        i
+        for i in list(parse_help(gen_makefile(), hidden=True))
+        if "goal" in i and goal == i["goal"]
+    ]
+    if item:
+        return fmt_goal(
+            item[0]["goal"],
+            item[0]["msg"],
+            len(item[0]["goal"]),
+            item[0].get("msgargs", ""),
+        )
+    else:
+        return f"  {ansi.style(goal,'$(GOAL_STYLE)')}:"
+def parse_goal(file, goal):
+    goals = goal_pattern.findall(file)
+    matched_goal = [i for i in goals if goal in i.split()]
+    output = []
+    if matched_goal:
+        output.append(recipe_help_header(matched_goal[0]))
+        lines = file.splitlines()
+        loc = [n for n, l in enumerate(lines) if l.startswith(f"{matched_goal[0]}:")][0]
+        recipe = []
+        for line in lines[loc + 1 :]:
+            if not line.startswith("\t"):
+                break
+            recipe.append(line)
+        output.append(divider(max((len(l) for l in recipe)) + 5))
+        output.append("\n".join(recipe) + "\n")
+    else:
+        output.append(f"{ansi.b_red}ERROR{ansi.end} Failed to find goal: {goal}")
+    return output
 def fmt_goal(goal, msg, max_goal_len, argstr):
     args = parseargs(argstr)
     goal_style = args.goal_style.strip() if args.goal_style else "$(GOAL_STYLE)"
@@ -115,6 +160,8 @@ def fmt_goal(goal, msg, max_goal_len, argstr):
         + f" $(HELP_SEP) "
         + ansi.style(msg, msg_style)
     )
+def divider(len):
+    return ansi.style(f"  {'$(DIVIDER)'*len}", "$(DIVIDER_STYLE)")
 def fmt_rawmsg(msg, argstr, maxlens):
     args = parseargs(argstr)
     lines = []
@@ -131,18 +178,13 @@ def fmt_rawmsg(msg, argstr, maxlens):
         else:
             lines.append(f"  {ansi.style(msg,msg_style)}")
     if args.divider:
-        lines.append(
-            ansi.style(
-                f"  {'$(DIVIDER)'*(len('$(HELP_SEP)')+sum(maxlens)+2)}",
-                "$(DIVIDER_STYLE)",
-            )
-        )
+        lines.append(divider(len("$(HELP_SEP)") + sum(maxlens) + 2))
     if args.whitespace:
         lines.append("\n")
     return lines
 def print_help():
     lines = [f"""$(USAGE)"""]
-    items = list(parse_make(gen_makefile()))
+    items = list(parse_help(gen_makefile()))
     maxlens = MaxLens(
         *(max((len(item[x]) for item in items if x in item)) for x in ["goal", "msg"])
     )
@@ -157,7 +199,19 @@ def print_help():
             lines.extend(fmt_rawmsg(item["rawmsg"], item.get("rawargs", ""), maxlens))
     lines.append(f"""$(EPILOG)""")
     print("\n".join(lines))
-print_help()
+def print_arg_help(help_args):
+    for arg in help_args.split():
+        print(f"{ansi.style('task.mk recipe help','$(HEADER_STYLE)')}\n")
+        print("\n".join(parse_goal(gen_makefile(), arg)))
+def main():
+    help_args = os.getenv("HELP_ARGS")
+    if help_args:
+        quit_make()
+        print_arg_help(help_args)
+    else:
+        print_help()
+if __name__ == "__main__":
+    main()
 endef
 define  ansi_py
 import os
@@ -255,6 +309,7 @@ endef
 define  confirm_py
 import sys
 $(ansi_py)
+$(quit_make_py)
 def confirm():
     """
     Ask user to enter Y or N (case-insensitive).
@@ -266,7 +321,12 @@ def confirm():
         answer = input(f"""$(2) {a.b_red}[Y/n]{a.end} """).lower()
     return answer == "y"
 if confirm():
-    sys.exit(0)
+    sys.exit()
 else:
-    sys.exit(1)
+    quit_make()
+endef
+define  quit_make_py
+import os, signal
+def quit_make():
+    os.kill(os.getppid(), signal.SIGQUIT)
 endef
