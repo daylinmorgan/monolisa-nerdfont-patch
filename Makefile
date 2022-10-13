@@ -26,7 +26,7 @@ update-fonts:
 ## check | check fc-list for MonoLisa
 .PHONY: check
 check:
-	$(call msg, Checking System for Fonts)
+	$(call msg,Checking System for Fonts)
 	@fc-list | grep "MonoLisa"
 
 ## update-src | update nerd fonts source
@@ -45,5 +45,5 @@ lint:
 clean:
 	@rm -r patched/*
 
-USAGE = {a.b_green}Update MonoLisa with Nerd Fonts! {a.end}\n\n{a.$(HEADER_STYLE)}usage{a.end}:\n	make <recipe>\n
+USAGE = {a.b_green}Update MonoLisa with Nerd Fonts! {a.end}\n\n{a.header}usage{a.end}:\n	make <recipe>\n
 -include .task.mk
