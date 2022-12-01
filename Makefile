@@ -1,7 +1,12 @@
 ARGS ?= -c
 OK_TYPES := otf ttf woff woff2
 NF_SRC := $(shell find src -type f)
-ML_TYPES := $(shell find ./MonoLisa -mindepth 1 -type d -exec basename {} \;)
+ML_TYPES := $(shell find ./MonoLisa \
+						-mindepth 1 \
+						-maxdepth 1 \
+						-not -empty \
+						-type d \
+						-exec basename {} \;)
 
 UNKNOWN := $(filter-out $(OK_TYPES),$(ML_TYPES))
 $(if $(UNKNOWN),$(error unknown font type in ./MonoLisa: $(UNKNOWN)))
