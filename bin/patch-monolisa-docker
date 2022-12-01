@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# set -e
+# docker exits with code 1?
+
+exts=(otf ttf woff woff2)
+ext=$1
+shift
+fp_args=$@
+
+if [[ -z $ext ]]; then
+	echo "please provide an extension"
+	exit 1
+fi
+
+if [[ ! " ${exts[@]} " =~ " ${ext} " ]]; then
+	echo "$ext is not a valid extension"
+	echo "Please choose one of the below:"
+	printf '%s\n' "${exts[@]}"
+	exit 1
+fi
+
+echo "Patching all fonts with ext -> $ext"
+echo "Using the following arguments for font-patcher $fp_args"
+
+docker run --rm -v "$(pwd)/MonoLisa/$ext:/in" -v "$(pwd)/patched/$ext:/out" nerdfonts/patcher $fp_args
+
+exit 0

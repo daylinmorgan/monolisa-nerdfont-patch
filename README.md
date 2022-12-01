@@ -22,6 +22,8 @@ sudo pacman -S fontforge
 
 You can also download the version for your system from the releases in the fontforge [repo](https://github.com/fontforge/fontforge).
 
+If you prefer to use `docker` rather than install `fontforge` you can just add `DOCKER=1` to calls to `make patch`.
+
 ## Downloading MonoLisa
 
 Once you have acquired MonoLisa, follow the link in your email to download it.
@@ -44,7 +46,6 @@ Once you have downloaded MonoLisa and `fontforge`
 you can easily apply the nerd font patches with `make`.
 
 To patch all font types use the default `patch` rule.
-
 
 ```bash
 make
