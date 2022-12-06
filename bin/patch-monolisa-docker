@@ -22,6 +22,12 @@ fi
 echo "Patching all fonts with ext -> $ext"
 echo "Using the following arguments for font-patcher $fp_args"
 
-docker run --rm -v "$(pwd)/MonoLisa/$ext:/in" -v "$(pwd)/patched/$ext:/out" nerdfonts/patcher $fp_args
+docker run \
+	--rm \
+	-v "$(pwd)/MonoLisa/$ext:/in" \
+	-v "$(pwd)/patched/$ext:/out" \
+	-u "$(id -u):$(id -g)" \
+	nerdfonts/patcher \
+	$fp_arg
 
 exit 0
