@@ -1,6 +1,6 @@
 # MonoLisa NF
 
-*Most* Batteries included repo to patch MonoLisa with Nerd Fonts glyphs
+_Most_ Batteries included repo to patch MonoLisa with Nerd Fonts glyphs
 
 tested w/ MonoLisa v1.808
 
@@ -22,7 +22,7 @@ sudo pacman -S fontforge
 
 You can also download the version for your system from the releases in the fontforge [repo](https://github.com/fontforge/fontforge).
 
-If you prefer to use `docker` rather than install `fontforge` you can just add `DOCKER=1` to calls to `make patch`.
+If you prefer to use `docker` rather than install `fontforge` you can add `ARGS='--docker'` to calls to `make patch`.
 
 ## Downloading MonoLisa
 
@@ -54,16 +54,18 @@ make
 By default the complete (`-c`) flag is passed to the font-patcher script to include all icons/symbols.
 You can change this by specifying the `ARGS` at runtime.
 
-
 ```bash
 ARGS="-c -w" make patch
 ```
+
+See `./bin/patch-monolisa --help` and `./bin/font-patcher --help` for available `ARGS`.
 
 You can find your patched fonts in the `patched/` directory
 
 If like me you want to place your patched fonts in a standard location on your Unix system you can move them to `~/.local/share/fonts/MonoLisa` with the `bin/update-fonts` script.
 
 Or for simplicity you can copy the fonts and update the cache with:
+
 ```bash
 make update-fonts
 ```

@@ -1,34 +1,13 @@
 ARGS ?= -c
-OK_TYPES := otf ttf woff woff2
-NF_SRC := $(shell find src -type f)
-ML_TYPES := $(shell find ./MonoLisa \
-						-mindepth 1 \
-						-maxdepth 1 \
-						-not -empty \
-						-type d \
-						-exec basename {} \;)
 
-UNKNOWN := $(filter-out $(OK_TYPES),$(ML_TYPES))
-$(if $(UNKNOWN),$(error unknown font type in ./MonoLisa: $(UNKNOWN)))
+NF_SRC := $(shell ./bin/get-font-files src)
+FONT_SRC := $(shell ./bin/get-font-files MonoLisa 'otf,ttf,woff,woff2')
 
-msg = $(call tprint,{a.bold}==>{a.end} {a.b_magenta}$(1){a.end} {a.bold}<=={a.end})
-
-## patch | add nerd fonts to MonoLisa
-ifdef DOCKER
-.PHONY: patch
-patch: $(foreach ml-type,$(ML_TYPES),patch-$(ml-type)-docker)
-else
-.PHONY: patch
-patch: $(addprefix patch-,$(ML_TYPES))
-endif
-
-patch-%: ./bin/font-patcher
-	$(call msg, Patching MonoLisa $* Files)
-	@./bin/patch-monolisa $* $(ARGS)
-
-patch-%-docker: ./bin/font-patcher
-	$(call msg, Patching Monolisa $* Files w/Docker)
-	@./bin/patch-monolisa-docker $* $(ARGS)
+## patch | apply nerd fonts patch
+patch: ./bin/font-patcher
+	@./bin/patch-monolisa \
+		$(foreach f,$(FONT_SRC),-f '$(f)') \
+		$(ARGS)
 
 ## update-fonts | move fonts and update fc-cache
 .PHONY: update-fonts
@@ -59,5 +38,6 @@ lint:
 clean:
 	@rm -r patched/*
 
+msg = $(call tprint,{a.bold}==>{a.end} {a.b_magenta}$(1){a.end} {a.bold}<=={a.end})
 USAGE = {a.b_green}Update MonoLisa with Nerd Fonts! {a.end}\n\n{a.header}usage{a.end}:\n	make <recipe>\n
 -include .task.mk
