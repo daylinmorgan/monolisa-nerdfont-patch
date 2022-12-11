@@ -109,11 +109,23 @@ def run_cmd(
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--font-path", action="append",
-                        type=Path, required=True)
-    parser.add_argument("-o", "--output", default="patched", type=Path)
-    parser.add_argument("-d", "--docker", action="store_true")
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument(
+        "-f",
+        "--font-path",
+        help="path to font files",
+        action="append",
+        type=Path,
+        required=True,
+    )
+    parser.add_argument(
+        "-o", "--output", help="target output directory", default="patched", type=Path
+    )
+    parser.add_argument(
+        "-d", "--docker", help="use nerdfonts/patcher docker image", action="store_true"
+    )
+    parser.add_argument(
+        "-v", "--verbose", help="show subprocess output", action="store_true"
+    )
     return parser.parse_known_args()
 
 
