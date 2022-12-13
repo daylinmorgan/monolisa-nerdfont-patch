@@ -1,12 +1,12 @@
 ARGS ?= -c
 
 NF_SRC := $(shell ./bin/get-font-files src)
-FONT_SRC := $(shell ./bin/get-font-files MonoLisa 'otf,ttf,woff,woff2')
+FONT_FLAGS := $(shell ./bin/get-font-files MonoLisa 'otf,ttf,woff,woff2')
 
 ## patch | apply nerd fonts patch
 patch: ./bin/font-patcher
 	@./bin/patch-monolisa \
-		$(foreach f,$(FONT_SRC),-f '$(f)') \
+		$(FONT_FLAGS) \
 		$(ARGS)
 
 ## update-fonts | move fonts and update fc-cache

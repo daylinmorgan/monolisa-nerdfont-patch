@@ -3,7 +3,6 @@
 import argparse
 import itertools
 import os
-import shlex
 import subprocess
 import sys
 import threading
@@ -16,6 +15,7 @@ from typing import List, Set
 
 class Color:
     def __init__(self):
+        self.bold = "\033[1m"
         self.red = "\033[1;31m"
         self.green = "\033[1;32m"
         self.yellow = "\033[1;33m"
@@ -80,7 +80,7 @@ class Spinner:
 
 
 def run_cmd(
-    command: str, fontfile: Path, verbose: bool, ignore_error: bool = False
+    command: List[str], fontfile: Path, verbose: bool, ignore_error: bool = False
 ) -> None:
     """run a subcommand
     Args:
@@ -90,7 +90,7 @@ def run_cmd(
     """
 
     p = subprocess.run(
-        shlex.split(command),
+        command,
         stdout=None if verbose else subprocess.PIPE,
         stderr=None if verbose else subprocess.STDOUT,
         universal_newlines=True,
@@ -136,19 +136,27 @@ def patch_single_font(
     output_path = output_dir / font_path.parent.name.replace("MonoLisa/", "")
     output_path.mkdir(exist_ok=True)
 
-    cmd = (
-        "fontforge -script "
-        f"./bin/font-patcher {font_path} "
-        "--glyphdir ./src/glyphs/ "
-        f"-o {output_path} "
-        f"{fp_args}"
-    )
+    cmd = [
+        "fontforge",
+        "-script",
+        "./bin/font-patcher",
+        "--glyphdir",
+        "./src/glyphs/",
+        "-out",
+        f"{output_path}",
+        *fp_args.split(" "),
+        f"{font_path}",
+    ]
 
     if verbose:
-        echo(f"cmd: {cmd}")
+        echo(f"cmd: {' '.join(cmd)}")
         run_cmd(cmd, font_path, verbose)
     else:
-        with Spinner(f"{color.yellow}:::{color.end} Patching {display_name}... "):
+        with Spinner(
+            f"{color.yellow}:::{color.end} Patching font "
+            f"{color.bold}{font_path.name}{color.end}... "
+        ):
+
             run_cmd(cmd, font_path, verbose)
 
     echo(f"{display_name} patched!", hue="green")
@@ -165,22 +173,28 @@ def patch_font_dir_docker(
     output_path = (output_dir / font_dir_path.name).resolve()
     output_path.mkdir(exist_ok=True)
 
-    cmd = (
-        "docker run --rm "
-        f"-v '{font_dir_path}:/in' "
-        f"-v '{output_path}:/out' "
-        f" -u '{os.getuid()}:{os.getegid()}' "
-        "nerdfonts/patcher "
-        f"{fp_args}"
-    )
+    cmd = [
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{font_dir_path}:/in",
+        "-v",
+        f"{output_path}:/out",
+        "-u",
+        f"{os.getuid()}:{os.getegid()}",
+        "nerdfonts/patcher",
+        *fp_args.split(" "),
+    ]
 
     # ignoring the fact that docker exits with code 1
     if verbose:
-        echo(f"cmd: {cmd}")
+        echo(f"cmd: {' '.join(cmd)}")
         run_cmd(cmd, font_dir_path, verbose, ignore_error=True)
     else:
         with Spinner(
-            f"{color.yellow}:::{color.end} Patching fonts in {font_dir_path.name}... "
+            f"{color.yellow}:::{color.end} Patching fonts in "
+            f"{color.bold}{font_dir_path.name}{color.end}... "
         ):
             run_cmd(cmd, font_dir_path, verbose, ignore_error=True)
 
@@ -208,8 +222,7 @@ def main():
             patch_font_dir_docker(font_dir, args.output, fp_args, args.verbose)
     else:
         for fontfile in args.font_path:
-            patch_single_font(Path(fontfile), args.output,
-                              fp_args, args.verbose)
+            patch_single_font(Path(fontfile), args.output, fp_args, args.verbose)
 
     echo("fonts are patched", hue="green")
     echo("Happy typing!", hue="green")
