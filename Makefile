@@ -1,3 +1,4 @@
+-include .env
 ARGS ?= -c
 
 NF_SRC := $(shell ./bin/get-font-files src)

@@ -6,3 +6,4 @@ patched/*
 !**/.gitkeep
 
 nerd-fonts
+.env
