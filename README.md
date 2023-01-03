@@ -2,20 +2,24 @@
 
 _Most_ Batteries included repo to patch MonoLisa with Nerd Fonts glyphs
 
-tested w/ MonoLisa v1.808
+tested w/ MonoLisa v2.003
 
 <p align="center">
 <img src="./assets/help.svg" width=400>
 </p>
 
-## Before You Begin
+## Dependencies
 
-First you will need to install `fontforge`
-There are a number of caveats to invoking the `font-patcher` script.
+- `python`
+- `make`
+- `fontforge` OR `docker`
+
+
+There are some caveats to invoking the `font-patcher` script.
 Some of which are explained by [nerd fonts](https://github.com/ryanoasis/nerd-fonts#font-patcher).
+To use `font-patcher` with `fontforge` first ensure it is installed (or see below for `docker` approach).
 
 On Arch:
-
 ```bash
 sudo pacman -S fontforge
 ```
