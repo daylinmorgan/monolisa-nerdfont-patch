@@ -215,7 +215,10 @@ def main():
     fp_args = " ".join(fp_args)
     if fp_args:
         echo(f"Flags passed to font-patcher: {fp_args}")
-
+    if args.verbose:
+        echo(f"Patching the following files")
+        for fontfile in args.font_path:
+            sys.stdout.write(f"  {color.cyan}->{color.end} {fontfile}\n")
     if args.docker:
         echo("==> DOCKER MODE ENABLED")
         for font_dir in collect_files_by_dir(args.font_path):
