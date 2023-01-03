@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+EXTS = ["otf", "ttf", "woff", "woff2"]
+
 
 def find_files(search_path, exts=None):
     return (
@@ -18,7 +20,7 @@ def main():
         exit(1)
 
     search_path = Path(sys.argv[1])
-    exts = sys.argv[2].split(",") if len(sys.argv) == 3 else None
+    exts = sys.argv[2].split(",") if len(sys.argv) == 3 else EXTS
 
     for f in find_files(search_path, exts):
         sys.stdout.write(f"-f '{f}' ")

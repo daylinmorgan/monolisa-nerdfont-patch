@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import List, Set
 
-# EXTS = ["otf", "ttf", "woff", "woff2"]
+FONT_SRC = (Path(__file__).parent.parent / "MonoLisa").absolute()
 
 
 class Color:
@@ -132,9 +132,10 @@ def get_args():
 def patch_single_font(
     font_path: Path, output_dir: Path, fp_args: str, verbose: bool
 ) -> None:
-    display_name = f"{font_path.parent.name}/{font_path.name}"
-    output_path = output_dir / font_path.parent.name.replace("MonoLisa/", "")
-    output_path.mkdir(exist_ok=True)
+    # update display name to full resolved path
+    rel_path = font_path.absolute().relative_to(FONT_SRC)
+    output_path = (output_dir / rel_path).parent
+    output_path.mkdir(exist_ok=True, parents=True)
 
     cmd = [
         "fontforge",
@@ -144,10 +145,12 @@ def patch_single_font(
         "./src/glyphs/",
         "-out",
         f"{output_path}",
-        *fp_args.split(" "),
-        f"{font_path}",
+        f"{font_path.absolute()}",
     ]
 
+    if fp_args:
+        cmd += fp_args.split(" ")
+    
     if verbose:
         echo(f"cmd: {' '.join(cmd)}")
         run_cmd(cmd, font_path, verbose)
@@ -159,19 +162,18 @@ def patch_single_font(
 
             run_cmd(cmd, font_path, verbose)
 
-    echo(f"{display_name} patched!", hue="green")
+    echo(f"{rel_path} patched!", hue="green")
 
 
 def collect_files_by_dir(fontfiles: List[Path]) -> Set[Path]:
-    return set([f.parent for f in fontfiles])
+    return set([f.parent.absolute() for f in fontfiles])
 
 
 def patch_font_dir_docker(
     font_dir_path: Path, output_dir: Path, fp_args: str, verbose: bool
 ) -> None:
-    font_dir_path = font_dir_path.resolve()
-    output_path = (output_dir / font_dir_path.name).resolve()
-    output_path.mkdir(exist_ok=True)
+    output_path = (output_dir / font_dir_path.relative_to(FONT_SRC)).absolute()
+    output_path.mkdir(exist_ok=True, parents=True)
 
     cmd = [
         "docker",
@@ -184,8 +186,10 @@ def patch_font_dir_docker(
         "-u",
         f"{os.getuid()}:{os.getegid()}",
         "nerdfonts/patcher",
-        *fp_args.split(" "),
     ]
+
+    if fp_args:
+        cmd += fp_args.split(" ")
 
     # ignoring the fact that docker exits with code 1
     if verbose:
@@ -218,7 +222,7 @@ def main():
     if args.verbose:
         echo(f"Patching the following files")
         for fontfile in args.font_path:
-            sys.stdout.write(f"  {color.cyan}->{color.end} {fontfile}\n")
+            sys.stdout.write(f"  {color.magenta}->{color.end} {fontfile}\n")
     if args.docker:
         echo("==> DOCKER MODE ENABLED")
         for font_dir in collect_files_by_dir(args.font_path):
