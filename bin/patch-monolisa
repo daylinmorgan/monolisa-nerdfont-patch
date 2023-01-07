@@ -150,7 +150,7 @@ def patch_single_font(
 
     if fp_args:
         cmd += fp_args.split(" ")
-    
+
     if verbose:
         echo(f"cmd: {' '.join(cmd)}")
         run_cmd(cmd, font_path, verbose)
@@ -220,7 +220,7 @@ def main():
     if fp_args:
         echo(f"Flags passed to font-patcher: {fp_args}")
     if args.verbose:
-        echo(f"Patching the following files")
+        echo("Patching the following files")
         for fontfile in args.font_path:
             sys.stdout.write(f"  {color.magenta}->{color.end} {fontfile}\n")
     if args.docker:

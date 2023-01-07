@@ -7,7 +7,7 @@ INSTALL_DIR=~/.local/share/fonts/MonoLisa
 
 mkdir -p $INSTALL_DIR
 
-for font_dir in $PATCHED_FONTS/*; do
+for font_dir in "$PATCHED_FONTS"/*; do
 	patched_dir="${font_dir##*/}"
 	echo ">>> $patched_dir"
 
@@ -15,10 +15,10 @@ for font_dir in $PATCHED_FONTS/*; do
 
 	if [[ -d ${dest} ]]; then
 		echo "deleting existing version"
-		rm -rf $dest
+		rm -rf "$dest"
 	fi
 
-	mkdir $dest && cp -v $font_dir/* $dest
+	mkdir "$dest" && cp -v "$font_dir"/* "$dest"
 done
 
 echo "Don't forget to run 'fc-cache -f -v'"
