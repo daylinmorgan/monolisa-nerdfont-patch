@@ -29,10 +29,10 @@ update-src:
 	$(call msg,Updating Source Files)
 	@./bin/update-src
 
-## lint | check shell scripts
+## lint | run pre-commit hooks
 .PHONY: lint
 lint:
-	@shfmt -w -s $(shell shfmt -f bin/)
+	@pre-commit run --all
 
 ## clean | remove patched fonts
 .PHONY: clean
