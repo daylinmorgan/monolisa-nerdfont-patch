@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REPO_URL=git@github.com:ryanoasis/nerd-fonts.git
+REPO_URL='https://github.com/ryanoasis/nerd-fonts.git'
 
 rm -rf nerd-fonts
 

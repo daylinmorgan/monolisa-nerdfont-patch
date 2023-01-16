@@ -1,0 +1,34 @@
+name: "Update Nerd Fonts"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 1st and 15th at 12:00 AM
+    - cron: "0 0 1,15 * *"
+
+permissions:
+  contents: write
+
+jobs:
+  change-batteries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Git Bot
+        run: |
+          git --version
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Check Nerd-Fonts Source
+        run: make update-src
+
+      - name: Commit Updates
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m "chore: change batteries"
+            git push
+          fi
