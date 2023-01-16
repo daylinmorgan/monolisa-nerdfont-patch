@@ -76,10 +76,6 @@ make update-fonts
 
 You can verify the fonts have been added with `make check`.
 
-## Changing the Batteries
-
-If I haven't committed to this repo in a while it's likely a good idea to run `make update-src` to update the fonts, icons and patcher script from nerd fonts.
-
 ## Contributing
 
 Before making changes to to any of the scripts in `bin` you should first install `pre-commit`.
