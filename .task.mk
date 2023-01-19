@@ -1,7 +1,7 @@
 # }> [github.com/daylinmorgan/task.mk] <{ #
 # Copyright (c) 2022 Daylin Morgan
 # MIT License
-# version: v22.9.28-dev
+# version: 23.1.1
 #
 # task.mk should be included at the bottom of your Makefile with `-include .task.mk`
 # See below for the standard configuration options that should be set prior to including this file.
@@ -27,7 +27,7 @@ ifeq (help,$(firstword $(MAKECMDGOALS)))
 endif
 ## h, help | show this help
 h help:
-	$(call py,help_py) || { echo "exiting early!"; exit 1; }
+	$(call py,help_py)
 _help: export SHOW_HIDDEN=true
 _help: help
 ifdef PRINT_VARS
@@ -64,7 +64,7 @@ _escape_shellstring = $(subst `,\`,$(subst ",\",$(subst $$,\$$,$(subst \,\\,$1))
 _escape_printf = $(subst \,\\,$(subst %,%%,$1))
 _create_string = $(subst $(_newline),\n,$(call _escape_shellstring,$(call _escape_printf,$1)))
 _printline = printf -- "<----------------------------------->\n"
-ifdef DEBUG
+ifdef TASKMK_DEBUG
 define _debug_runner
 @printf "$(1) Script:\n";$(_printline);
 @printf "$(call _create_string,$(3))\n" | cat -n
@@ -88,9 +88,31 @@ import subprocess
 import sys
 from textwrap import wrap
 $(utils_py)
+a = ansi = Ansi(target="stdout")
 MaxLens = namedtuple("MaxLens", "goal msg")
 pattern = re.compile(
-    r"^## (?P<goal>.*?) \| (?P<msg>.*?)(?:\s?\| args: (?P<msgargs>.*?))?$$|^### (?P<rawmsg>.*?)?(?:\s?\| args: (?P<rawargs>.*?))?$$"
+    r"""
+    ^\#\#\
+    (?P<goal>.*?)\s?\|\s?(?P<msg>.*?)
+    \s?
+    (?:
+      (?:\|\s?args:\s?|\|>)
+      \s?
+      (?P<msgargs>.*?)
+    )?
+    $$
+    |
+    ^\#\#\#\
+    (?P<rawmsg>.*?)
+    \s?
+    (?:
+      (?:\|\s?args:|\|\>)
+      \s?
+      (?P<rawargs>.*?)
+    )?
+    $$
+    """,
+    re.X,
 )
 goal_pattern = re.compile(r"""^(?!#|\t)(.*):.*\n\t""", re.MULTILINE)
 def parseargs(argstring):
@@ -228,12 +250,12 @@ def print_help():
 def print_arg_help(help_args):
     print(f"{ansi.style('task.mk recipe help','header')}\n")
     for arg in help_args.split():
-        print("\n".join(parse_goal(gen_makefile(), arg)))
-    print()
+        print("\n".join((*parse_goal(gen_makefile(), arg), "\n")))
 def main():
     help_args = os.getenv("HELP_ARGS")
     if help_args:
         print_arg_help(help_args)
+        print(f"{ansi.faint}exiting task.mk{ansi.end}")
         sys.exit(1)
     else:
         print_help()
@@ -246,14 +268,30 @@ sys.stderr.write(f"""$(2)\n""")
 endef
 define  print_ansi_py
 $(utils_py)
-sep = f"$(HELP_SEP)"
-codes_names = {getattr(ansi, attr): attr for attr in ansi.__dict__}
+import sys
+codes_names = {
+    getattr(ansi, attr): attr
+    for attr in ansi.__dict__
+    if attr
+    not in [
+        "target",
+        "header",
+        "accent",
+        "params",
+        "goal",
+        "msg",
+        "div_style",
+    ]
+}
 for code in sorted(codes_names.keys(), key=lambda item: (len(item), item)):
-    print(f"{codes_names[code]:>20} {sep} {code+'*****'+ansi.end} {sep} {repr(code)}")
+    sys.stderr.write(
+        f"{codes_names[code]:>20} {cfg.sep} {code+'*****'+ansi.end} {cfg.sep} {repr(code)}\n"
+    )
 endef
 define  vars_py
 import os
 $(utils_py)
+ansi = Ansi(target="stdout")
 vars = "$2".split()
 length = max((len(v) for v in vars))
 print(f"{ansi.header}vars{ansi.end}:\n")
@@ -272,7 +310,8 @@ def confirm():
     """
     answer = ""
     while answer not in ["y", "n"]:
-        answer = input(f"""$(2) {a.b_red}[Y/n]{a.end} """).lower()
+        sys.stderr.write(f"""$(2) {a.b_red}[Y/n]{a.end} \n""")
+        answer = input().lower()
     return answer == "y"
 if confirm():
     sys.exit()
@@ -307,7 +346,8 @@ addfg = lambda byte: byte + 30
 addbg = lambda byte: byte + 40
 class Ansi:
     """ANSI escape codes"""
-    def __init__(self):
+    def __init__(self, target="stdout"):
+        self.target = target
         self.setcode("end", "\033[0m")
         self.setcode("default", "\033[38m")
         self.setcode("bg_default", "\033[48m")
@@ -324,7 +364,11 @@ class Ansi:
         self.add_cfg()
     def setcode(self, name, escape_code):
         """create attr for style and escape code"""
-        if not sys.stdout.isatty() or os.getenv("NO_COLOR", False):
+        if os.getenv("NO_COLOR", False):
+            setattr(self, name, "")
+        elif (self.target == "stderr" and not sys.stderr.isatty()) or (
+            self.target == "stdout" and not sys.stdout.isatty()
+        ):
             setattr(self, name, "")
         else:
             setattr(self, name, escape_code)

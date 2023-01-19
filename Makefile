@@ -4,7 +4,7 @@ ARGS ?= -c
 NF_SRC := $(shell ./bin/get-font-files src)
 FONT_FLAGS := $(shell ./bin/get-font-files MonoLisa 'otf,ttf,woff,woff2')
 
-## patch | apply nerd fonts patch
+## patch | apply nerd fonts patch |> -gs b_magenta -ms bold
 patch: ./bin/font-patcher
 	@./bin/patch-monolisa \
 		$(FONT_FLAGS) \
