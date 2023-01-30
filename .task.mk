@@ -1,8 +1,7 @@
 # }> [github.com/daylinmorgan/task.mk] <{ #
 # Copyright (c) 2022 Daylin Morgan
 # MIT License
-# version: 23.1.1
-#
+TASKMK_VERSION ?= 23.1.1
 # task.mk should be included at the bottom of your Makefile with `-include .task.mk`
 # See below for the standard configuration options that should be set prior to including this file.
 # You can update your .task.mk with `make _update-task.mk`
@@ -25,30 +24,27 @@ ifeq (help,$(firstword $(MAKECMDGOALS)))
   HELP_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 	export HELP_ARGS
 endif
-## h, help | show this help
-h help:
+h help: ## show this help
 	$(call py,help_py)
 _help: export SHOW_HIDDEN=true
 _help: help
 ifdef PRINT_VARS
-$(foreach v,$(PRINT_VARS),$(eval export $(v)))
+TASKMK_VARS=$(subst $(eval ) ,<|>,$(foreach v,$(PRINT_VARS),$(v)=$($(v))))
 .PHONY: vars v
-vars v:
-	$(call py,vars_py,$(PRINT_VARS))
+v vars:
+	$(call py,vars_py,$(TASKMK_VARS))
 endif
-### | args: -ws --hidden
-### task.mk builtins: | args: -d --hidden
-## _print-ansi | show all possible ansi color code combinations
-_print-ansi:
+### |> -ws --hidden
+### task.mk builtins: |> -d --hidden
+_print-ansi: ## show all possible ansi color code combinations
 	$(call py,print_ansi_py)
 # functions to take f-string literals and pass to python print
 tprint = $(call py,print_py,$(1))
-tprint-sh = $(call pysh,print_py,$(1))
+tprint-verbose= $(call py-verbose,print_py,$(1))
 tconfirm = $(call py,confirm_py,$(1))
-## _update-task.mk | downloads latest development version of task.mk
-_update-task.mk:
+_update-task.mk: ## downloads version of task.mk (TASKMK_VERSION=)
 	$(call tprint,{a.b_cyan}Updating task.mk{a.end})
-	curl https://raw.githubusercontent.com/daylinmorgan/task.mk/main/task.mk -o .task.mk
+	curl https://raw.githubusercontent.com/daylinmorgan/task.mk/$(TASKMK_VERSION)/task.mk -o .task.mk
 .PHONY: h help _help _print-ansi _update-task.mk
 TASK_MAKEFILE_LIST := $(filter-out $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)),$(MAKEFILE_LIST))
 export MAKEFILE_LIST MAKE TASK_MAKEFILE_LIST
@@ -77,7 +73,7 @@ else
 py = @python3 <(printf "$(call _create_string,$($(1)))")
 tbash = @bash <(printf "$(call _create_string,$($(1)))")
 endif
-pysh = python3 <(printf "$(call _create_string,$($(1)))")
+py-verbose = python3 <(printf "$(call _create_string,$($(1)))")
 # ---- [python scripts] ---- #
 define  help_py
 import argparse
@@ -92,26 +88,20 @@ a = ansi = Ansi(target="stdout")
 MaxLens = namedtuple("MaxLens", "goal msg")
 pattern = re.compile(
     r"""
-    ^\#\#\
-    (?P<goal>.*?)\s?\|\s?(?P<msg>.*?)
-    \s?
-    (?:
-      (?:\|\s?args:\s?|\|>)
-      \s?
-      (?P<msgargs>.*?)
-    )?
-    $$
-    |
-    ^\#\#\#\
-    (?P<rawmsg>.*?)
-    \s?
-    (?:
-      (?:\|\s?args:|\|\>)
-      \s?
-      (?P<rawargs>.*?)
-    )?
-    $$
-    """,
+(?:
+  ^\#\#\#\s+ # <- raw message
+  |
+  ^(?:
+    (?:\#\#\s+)?
+    (?P<goal>.*?)(?:\s+\|>|:.*?\#\#)\s+
+  ) # <- a custom goal or actual recipe
+)
+(?P<msg>.*?)?\s? # <- help text (optional)
+(?:\|>\s+
+  (?P<msgargs>.*?)
+)? # <- style args (optional)
+$$
+""",
     re.X,
 )
 goal_pattern = re.compile(r"""^(?!#|\t)(.*):.*\n\t""", re.MULTILINE)
@@ -234,7 +224,10 @@ def print_help():
     lines = [cfg.usage]
     items = list(parse_help(gen_makefile()))
     maxlens = MaxLens(
-        *(max((len(item[x]) for item in items if x in item)) for x in ["goal", "msg"])
+        *(
+            max((*(len(item[x]) for item in items if x in item), 0))
+            for x in ["goal", "msg"]
+        )
     )
     for item in items:
         if "goal" in item:
@@ -243,8 +236,8 @@ def print_help():
                     item["goal"], item["msg"], maxlens.goal, item.get("msgargs", "")
                 )
             )
-        if "rawmsg" in item:
-            lines.extend(fmt_rawmsg(item["rawmsg"], item.get("rawargs", ""), maxlens))
+        else:
+            lines.extend(fmt_rawmsg(item["msg"], item.get("msgargs", ""), maxlens))
     lines.append(cfg.epilog)
     print("\n".join(lines))
 def print_arg_help(help_args):
@@ -292,12 +285,10 @@ define  vars_py
 import os
 $(utils_py)
 ansi = Ansi(target="stdout")
-vars = "$2".split()
-length = max((len(v) for v in vars))
-print(f"{ansi.header}vars{ansi.end}:\n")
-for v in vars:
-    print(f"  {ansi.params}{v:<{length}}{ansi.end} = {os.getenv(v)}")
-print()
+task_vars = tuple(v.split('=') for v in "$2".split('<|>'))
+length = max((len(v[0]) for v in task_vars))
+rows = (f"  {ansi.params}{v[0]:<{length}}{ansi.end} = {v[1]}" for v in task_vars)
+print('\n'.join((f"{ansi.header}vars{ansi.end}:\n", *rows,'')))
 endef
 define  confirm_py
 import sys
@@ -399,6 +390,7 @@ class Ansi:
                     print("Expected one or three values for bg as a list")
                     sys.exit(1)
             return code + end
+
     def add_cfg(self):
         cfg_styles = {
             "header": "$(HEADER_STYLE)",
