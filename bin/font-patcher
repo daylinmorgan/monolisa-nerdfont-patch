@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding=utf8
-# Nerd Fonts Version: 2.3.0-RC
+# Nerd Fonts Version: 2.3.3
 # Script version is further down
 
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Change the script version when you edit this script:
-script_version = "3.4.3"
+script_version = "3.5.2"
 
-version = "2.3.0-RC"
+version = "2.3.3"
 projectName = "Nerd Fonts"
 projectNameAbbreviation = "NF"
 projectNameSingular = projectName[:-1]
@@ -36,7 +36,6 @@ except ImportError:
         )
     )
 
-# This is for experimenting
 sys.path.insert(0, os.path.abspath(os.path.dirname(sys.argv[0])) + '/bin/scripts/name_parser/')
 try:
     from FontnameParser import FontnameParser
@@ -187,15 +186,23 @@ def check_panose_monospaced(font):
                    (panose[0] == 3 and panose[3] == 3))
     return 1 if panose_mono else 0
 
+def panose_check_to_text(value, panose = False):
+    """ Convert value from check_panose_monospaced() to human readable string """
+    if value == 0:
+        return "Panose says \"not monospaced\""
+    if value == 1:
+        return "Panose says \"monospaced\""
+    return "Panose is invalid" + (" ({})".format(list(panose)) if panose else "")
+
 def is_monospaced(font):
     """ Check if a font is probably monospaced """
     # Some fonts lie (or have not any Panose flag set), spot check monospaced:
     width = -1
     width_mono = True
-    for glyph in [ 0x49, 0x4D, 0x57, 0x61, 0x69, 0x2E ]: # wide and slim glyphs 'I', 'M', 'W', 'a', 'i', '.'
+    for glyph in [ 0x49, 0x4D, 0x57, 0x61, 0x69, 0x6d, 0x2E ]: # wide and slim glyphs 'I', 'M', 'W', 'a', 'i', 'm', '.'
         if not glyph in font:
             # A 'strange' font, believe Panose
-            return check_panose_monospaced(font) == 1
+            return (check_panose_monospaced(font) == 1, None)
         # print(" -> {} {}".format(glyph, font[glyph].width))
         if width < 0:
             width = font[glyph].width
@@ -213,7 +220,7 @@ def is_monospaced(font):
             width_mono = False
             break
     # We believe our own check more then Panose ;-D
-    return width_mono
+    return (width_mono, None if width_mono else glyph)
 
 def get_advance_width(font, extended, minimum):
     """ Get the maximum/minimum advance width in the extended(?) range """
@@ -235,6 +242,11 @@ def get_advance_width(font, extended, minimum):
         elif minimum and width > font[glyph].width:
             width = font[glyph].width
     return width
+
+def report_advance_widths(font):
+    return "Advance widths (base/extended): {} - {} / {} - {}".format(
+        get_advance_width(font, True, True), get_advance_width(font, False, True),
+        get_advance_width(font, False, False), get_advance_width(font, True, False))
 
 
 class font_patcher:
@@ -259,8 +271,8 @@ class font_patcher:
             self.assert_monospace()
         self.remove_ligatures()
         self.setup_patch_set()
-        self.setup_line_dimensions()
         self.get_sourcefont_dimensions()
+        self.improve_line_dimensions()
         self.sourceFont.encoding = 'UnicodeFull'  # Update the font encoding to ensure that the Unicode glyphs are available
         self.onlybitmaps = self.sourceFont.onlybitmaps  # Fetch this property before adding outlines. NOTE self.onlybitmaps initialized and never used
 
@@ -629,7 +641,11 @@ class font_patcher:
             font.appendSFNTName(str('English (US)'), str('SubFamily'), subFamily)
         else:
             fam_suffix = projectNameSingular if not self.args.windows else projectNameAbbreviation
-            fam_suffix += ' Mono' if self.args.single else ''
+            if self.args.single:
+                if self.args.windows:
+                    fam_suffix += 'M'
+                else:
+                    fam_suffix += ' Mono'
             n.inject_suffix(verboseAdditionalFontNameSuffix, additionalFontNameSuffix, fam_suffix)
             n.rename_font(font)
 
@@ -669,15 +685,18 @@ class font_patcher:
 
     def assert_monospace(self):
         # Check if the sourcefont is monospaced
-        width_mono = is_monospaced(self.sourceFont)
+        width_mono, offending_char = is_monospaced(self.sourceFont)
         panose_mono = check_panose_monospaced(self.sourceFont)
         # The following is in fact "width_mono != panose_mono", but only if panose_mono is not 'unknown'
         if (width_mono and panose_mono == 0) or (not width_mono and panose_mono == 1):
             print("  Warning: Monospaced check: Panose assumed to be wrong")
-            print("     Glyph widths {} / {} - {} and Panose says \"monospace {}\" ({})".format(get_advance_width(self.sourceFont, False, True),
-                get_advance_width(self.sourceFont, False, False), get_advance_width(self.sourceFont, True, False), panose_mono, list(self.sourceFont.os2_panose)))
+            print("  {} and {}".format(
+                report_advance_widths(self.sourceFont),
+                panose_check_to_text(panose_mono, self.sourceFont.os2_panose)))
         if not width_mono:
             print("  Warning: Sourcefont is not monospaced - forcing to monospace not advisable, results might be useless")
+            if offending_char is not None:
+                print("           Offending char: 0x{:X}".format(offending_char))
             if self.args.single <= 1:
                 sys.exit(projectName + ": Font will not be patched! Give --mono (or -s, or --use-single-width-glyphs) twice to force patching")
 
@@ -883,22 +902,37 @@ class font_patcher:
             {'Enabled': self.args.custom,               'Name': "Custom",                  'Filename': self.args.custom,                                 'Exact': True,  'SymStart': 0x0000, 'SymEnd': 0x0000, 'SrcStart': None,   'ScaleRules': None,             'Attributes': CUSTOM_ATTR}
         ]
 
-    def setup_line_dimensions(self):
-        # win_ascent and win_descent are used to set the line height for windows fonts.
-        # hhead_ascent and hhead_descent are used to set the line height for mac fonts.
-        #
+    def improve_line_dimensions(self):
         # Make the total line size even.  This seems to make the powerline separators
         # center more evenly.
         if self.args.adjustLineHeight:
             if (self.sourceFont.os2_winascent + self.sourceFont.os2_windescent) % 2 != 0:
+                # All three are equal before due to get_sourcefont_dimensions()
+                self.sourceFont.hhea_ascent += 1
+                self.sourceFont.os2_typoascent += 1
                 self.sourceFont.os2_winascent += 1
 
-            # Make the line size identical for windows and mac
-            # ! This is broken because hhea* is changed but os2_typo* is not
-            # ! On the other hand we need intact (i.e. original) typo values
-            # ! in get_sourcefont_dimensions() @TODO FIXME
-            self.sourceFont.hhea_ascent = self.sourceFont.os2_winascent
-            self.sourceFont.hhea_descent = -self.sourceFont.os2_windescent
+    def add_glyphrefs_to_essential(self, unicode):
+        self.essential.add(unicode)
+        # According to fontforge spec, altuni is either None or a tuple of tuples
+        # Those tuples contained in altuni are of the following "format":
+        # (unicode-value, variation-selector, reserved-field)
+        altuni = self.sourceFont[unicode].altuni
+        if altuni is not None:
+            for altcode in [ v for v, s, r in altuni if v >= 0 ]:
+                # If alternate unicode already exists in self.essential,
+                # that means it has gone through this function before.
+                # Therefore we skip it to avoid infinite loop.
+                # A unicode value of -1 basically means unused and is also worth skipping.
+                if altcode not in self.essential:
+                    self.add_glyphrefs_to_essential(altcode)
+        # From fontforge documentation:
+        # glyph.references return a tuple of tuples containing, for each reference in foreground,
+        # a glyph name, a transformation matrix, and whether the reference is currently selected.
+        references = self.sourceFont[unicode].references
+        for refcode in [ self.sourceFont[n].unicode for n, m, s in references ]:
+            if refcode not in self.essential and refcode >= 0:
+                self.add_glyphrefs_to_essential(refcode)
 
     def get_essential_references(self):
         """Find glyphs that are needed for the basic glyphs"""
@@ -906,25 +940,60 @@ class font_patcher:
         # Find out which other glyphs are also needed to keep the basic
         # glyphs intact.
         # 0x00-0x17f is the Latin Extended-A range
-        for glyph in range(0x21, 0x17f):
+        basic_glyphs = set()
+        # Collect substitution destinations
+        for glyph in range(0x21, 0x17f + 1):
             if not glyph in self.sourceFont:
                 continue
-            for r in self.sourceFont[glyph].references:
-                self.essential.add(self.sourceFont[r[0]].unicode)
+            basic_glyphs.add(glyph)
+            for possub in self.sourceFont[glyph].getPosSub('*'):
+                if possub[1] == 'Substitution' or possub[1] == 'Ligature':
+                    basic_glyphs.add(self.sourceFont[possub[2]].unicode)
+        basic_glyphs.discard(-1) # the .notdef glyph
+        for glyph in basic_glyphs:
+            self.add_glyphrefs_to_essential(glyph)
 
     def get_sourcefont_dimensions(self):
-        # Initial font dimensions
-        self.font_dim = {
-            'xmin'  : 0,
-            'ymin'  : -self.sourceFont.os2_windescent,
-            'xmax'  : 0,
-            'ymax'  : self.sourceFont.os2_winascent,
-            'width' : 0,
-            'height': 0,
-        }
-        if self.sourceFont.os2_use_typo_metrics:
-            self.font_dim['ymin'] = self.sourceFont.os2_typodescent
-            self.font_dim['ymax'] = self.sourceFont.os2_typoascent
+        """ This gets the font dimensions (cell width and height), and makes them equal on all platforms """
+        # Step 1
+        # There are three ways to discribe the baseline to baseline distance
+        # (a.k.a. line spacing) of a font. That is all a kuddelmuddel
+        # and we try to sort this out here
+        # See also https://glyphsapp.com/learn/vertical-metrics
+        # See also https://github.com/source-foundry/font-line
+        hhea_height = self.sourceFont.hhea_ascent - self.sourceFont.hhea_descent
+        typo_height = self.sourceFont.os2_typoascent - self.sourceFont.os2_typodescent
+        win_height = self.sourceFont.os2_winascent + self.sourceFont.os2_windescent
+        win_gap = max(0, self.sourceFont.hhea_linegap - win_height + hhea_height)
+        hhea_btb = hhea_height + self.sourceFont.hhea_linegap
+        typo_btb = typo_height + self.sourceFont.os2_typolinegap
+        win_btb = win_height + win_gap
+        use_typo = self.sourceFont.os2_use_typo_metrics != 0
+
+        # We use either TYPO (1) or WIN (2) and compare with HHEA
+        # and use HHEA (0) if the fonts seems broken
+        our_btb = typo_btb if use_typo else win_btb
+        if our_btb == hhea_btb:
+            metrics = 1 if use_typo else 2 # conforming font
+        else:
+            # We trust the WIN metric more, see experiments in #1056
+            print("{}: WARNING Font vertical metrics inconsistent (HHEA {} / TYPO {} / WIN {}), using WIN".format(projectName, hhea_btb, typo_btb, win_btb))
+            our_btb = win_btb
+            metrics = 1
+
+        # print("FINI hhea {} typo {} win {} use {}     {}      {}".format(hhea_btb, typo_btb, win_btb, use_typo, our_btb != hhea_btb, self.sourceFont.fontname))
+
+        self.font_dim = {'xmin': 0, 'ymin': 0, 'xmax': 0, 'ymax': 0, 'width' : 0, 'height': 0}
+
+        if metrics == 0:
+            self.font_dim['ymin'] = self.sourceFont.hhea_descent + half_gap(self.sourceFont.hhea_linegap, False)
+            self.font_dim['ymax'] = self.sourceFont.hhea_ascent + half_gap(self.sourceFont.hhea_linegap, True)
+        elif metrics == 1:
+            self.font_dim['ymin'] = self.sourceFont.os2_typodescent + half_gap(self.sourceFont.os2_typolinegap, False)
+            self.font_dim['ymax'] = self.sourceFont.os2_typoascent + half_gap(self.sourceFont.os2_typolinegap, True)
+        else:
+            self.font_dim['ymin'] = -self.sourceFont.os2_windescent + half_gap(win_gap, False)
+            self.font_dim['ymax'] = self.sourceFont.os2_winascent + half_gap(win_gap, True)
 
         # Calculate font height
         self.font_dim['height'] = -self.font_dim['ymin'] + self.font_dim['ymax']
@@ -939,36 +1008,30 @@ class font_patcher:
                 'width' : self.sourceFont.em,
                 'height': self.sourceFont.descent + self.sourceFont.ascent,
             }
+        elif self.font_dim['height'] < 0:
+            sys.exit("{}: Can not detect sane font height".format(projectName))
 
-        # Line gap add extra space on the bottom of the line which
-        # doesn't allow the powerline glyphs to fill the entire line.
-        # Put half of the gap into the 'cell', each top and bottom
-        gap = max(self.sourceFont.hhea_linegap, self.sourceFont.os2_typolinegap) # TODO probably wrong
-        if self.sourceFont.os2_use_typo_metrics:
-            gap = self.sourceFont.os2_typolinegap
-        self.sourceFont.hhea_linegap = 0
+        # Make all metrics equal
         self.sourceFont.os2_typolinegap = 0
-        if gap > 0:
-            gap_top = int(gap / 2)
-            gap_bottom = gap - gap_top
-            print("Redistributing line gap of {} ({} top and {} bottom)".format(gap, gap_top, gap_bottom))
-            self.font_dim['ymin'] -= gap_bottom
-            self.font_dim['ymax'] += gap_top
-            self.font_dim['height'] = -self.font_dim['ymin'] + self.font_dim['ymax']
-            self.sourceFont.os2_typoascent = self.sourceFont.os2_typoascent + gap_top
-            self.sourceFont.os2_typodescent = self.sourceFont.os2_typodescent - gap_bottom
-            # TODO Check what to do with win and hhea values
+        self.sourceFont.os2_typoascent = self.font_dim['ymax']
+        self.sourceFont.os2_typodescent = self.font_dim['ymin']
+        self.sourceFont.os2_winascent = self.sourceFont.os2_typoascent
+        self.sourceFont.os2_windescent = -self.sourceFont.os2_typodescent
+        self.sourceFont.hhea_ascent = self.sourceFont.os2_typoascent
+        self.sourceFont.hhea_descent = self.sourceFont.os2_typodescent
+        self.sourceFont.hhea_linegap = self.sourceFont.os2_typolinegap
+        self.sourceFont.os2_use_typo_metrics = 1
 
-        # Find the biggest char width
-        # Ignore the y-values, os2_winXXXXX values set above are used for line height
-        #
+        # Step 2
+        # Find the biggest char width and advance width
         # 0x00-0x17f is the Latin Extended-A range
         warned = self.args.quiet or self.args.nonmono # Do not warn if quiet or proportional target
         for glyph in range(0x21, 0x17f):
             if glyph in range(0x7F, 0xBF) or glyph in [
-                    0x132, 0x134, # IJ, ij (in Overpass Mono)
+                    0x132, 0x133, # IJ, ij (in Overpass Mono)
                     0x022, 0x027, 0x060, # Single and double quotes in Inconsolata LGC
                     0x0D0, 0x10F, 0x110, 0x111, 0x127, 0x13E, 0x140, 0x165, # Eth and others with stroke or caron in RobotoMono
+                    0x02D, # hyphen for Monofur
                     ]:
                 continue # ignore special characters like '1/4' etc and some specifics
             try:
@@ -979,12 +1042,13 @@ class font_patcher:
             if self.font_dim['width'] < self.sourceFont[glyph].width:
                 self.font_dim['width'] = self.sourceFont[glyph].width
                 if not warned and glyph > 0x7a: # NOT 'basic' glyph, which includes a-zA-Z
-                    print("Extended glyphs wider than basic glyphs")
+                    print("Warning: Extended glyphs wider than basic glyphs, results might be useless\n  {}".format(
+                        report_advance_widths(self.sourceFont)))
                     warned = True
-                # print("New MAXWIDTH-A {} {} -> {} {}".format(glyph, self.sourceFont[glyph].width, self.font_dim['width'], xmax))
+                # print("New MAXWIDTH-A {:X} {} -> {} {}".format(glyph, self.sourceFont[glyph].width, self.font_dim['width'], xmax))
             if xmax > self.font_dim['xmax']:
                 self.font_dim['xmax'] = xmax
-                # print("New MAXWIDTH-B {} {} -> {} {}".format(glyph, self.sourceFont[glyph].width, self.font_dim['width'], xmax))
+                # print("New MAXWIDTH-B {:X} {} -> {} {}".format(glyph, self.sourceFont[glyph].width, self.font_dim['width'], xmax))
         # print("FINAL", self.font_dim)
 
 
@@ -1241,7 +1305,7 @@ class font_patcher:
 
         # end for
 
-        if not self.args.quiet or self.args.progressbars:
+        if not self.args.quiet:
             sys.stdout.write("\n")
 
 
@@ -1367,6 +1431,20 @@ class font_patcher:
                     return (scale, box)
         return None
 
+
+def half_gap(gap, top):
+    """ Divides integer value into two new integers """
+    # Line gap add extra space on the bottom of the line which
+    # doesn't allow the powerline glyphs to fill the entire line.
+    # Put half of the gap into the 'cell', each top and bottom
+    if gap <= 0:
+        return 0
+    gap_top = int(gap / 2)
+    gap_bottom = gap - gap_top
+    if top:
+        print("Redistributing line gap of {} ({} top and {} bottom)".format(gap, gap_top, gap_bottom))
+        return gap_top
+    return gap_bottom
 
 def replace_font_name(font_name, replacement_dict):
     """ Replaces all keys with vals from replacement_dict in font_name. """
@@ -1547,7 +1625,7 @@ def setup_arguments():
     args = parser.parse_args()
 
     if args.makegroups and not FontnameParserOK:
-        sys.exit(projectName + ": FontnameParser module missing (bin/scripts/name_parser/Fontname*), can not --makegroups".format(projectName))
+        sys.exit("{}: FontnameParser module missing (bin/scripts/name_parser/Fontname*), can not --makegroups".format(projectName))
 
     # if you add a new font, set it to True here inside the if condition
     if args.complete:
