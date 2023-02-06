@@ -18,7 +18,7 @@ for font_dir in "$PATCHED_FONTS"/*; do
 		rm -rf "$dest"
 	fi
 
-	mkdir "$dest" && cp -v "$font_dir"/* "$dest"
+	mkdir "$dest" && cp -rv "$font_dir"/* "$dest"
 done
 
 echo "Don't forget to run 'fc-cache -f -v'"
