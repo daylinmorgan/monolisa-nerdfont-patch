@@ -1,13 +1,10 @@
 -include .env
 ARGS ?= -c
 
-NF_SRC := $(shell ./bin/get-font-files src)
-FONT_FLAGS := $(shell ./bin/get-font-files MonoLisa 'otf,ttf,woff,woff2')
-
 patch: ./bin/font-patcher ## apply nerd fonts patch |> -gs b_magenta -ms bold
-	@./bin/patch-monolisa \
-		$(FONT_FLAGS) \
-		$(ARGS)
+	@./patch-monolisa \
+		$(ARGS) \
+		-f MonoLisa/
 
 update-fonts: ## move fonts and update fc-cache
 	$(call msg,Adding Fonts To System)

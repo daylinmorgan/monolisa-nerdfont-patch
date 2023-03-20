@@ -11,7 +11,7 @@ tested w/ MonoLisa v2.003
 ## Dependencies
 
 - `python`
-- `make`
+- `make` (optional)
 - `fontforge` OR `docker`
 
 
@@ -52,7 +52,7 @@ you can easily apply the nerd font patches with `make`.
 To patch all font types use the default `patch` rule.
 
 ```bash
-make
+make # or ./patch-monolisa -f MonoLisa -c
 ```
 
 By default the complete (`-c`) flag is passed to the font-patcher script to include all icons/symbols.
@@ -62,7 +62,7 @@ You can change this by specifying the `ARGS` at runtime.
 ARGS="-c -w" make patch
 ```
 
-See `./bin/patch-monolisa --help` and `./bin/font-patcher --help` for available `ARGS`.
+See `./patch-monolisa --help` and `./bin/font-patcher --help` for available `ARGS`.
 
 You can find your patched fonts in the `patched/` directory
 

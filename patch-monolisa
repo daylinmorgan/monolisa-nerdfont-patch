@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import List, Set
 
-FONT_SRC = (Path(__file__).parent.parent / "MonoLisa").absolute()
+FONT_SRC = (Path(__file__).parent / "MonoLisa").absolute()
 
 
 class Color:
@@ -159,7 +159,6 @@ def patch_single_font(
             f"{color.yellow}:::{color.end} Patching font "
             f"{color.bold}{font_path.name}{color.end}... "
         ):
-
             run_cmd(cmd, font_path, verbose)
 
     echo(f"{rel_path} patched!", hue="green")
@@ -205,6 +204,17 @@ def patch_font_dir_docker(
     echo(f"{font_dir_path.name}/ fonts patched!", hue="green")
 
 
+def get_font_files(p):
+    exts = ["otf", "ttf", "woff", "woff2"]
+
+    if p.is_file():
+        return (p,)
+
+    if p.is_dir():
+        return (f for ext in exts for f in p.glob(f"**/*.{ext}"))
+    return ()
+
+
 def echo(msg: str, header=False, hue="cyan") -> None:
     if header:
         print(f"==>{color.magenta} {msg} {color.end}<==")
@@ -213,7 +223,6 @@ def echo(msg: str, header=False, hue="cyan") -> None:
 
 
 def main():
-
     echo("MonoLisa NerdFont Patcher", header=True)
     args, fp_args = get_args()
     fp_args = " ".join(fp_args)
@@ -223,12 +232,15 @@ def main():
         echo("Patching the following files")
         for fontfile in args.font_path:
             sys.stdout.write(f"  {color.magenta}->{color.end} {fontfile}\n")
+
+    fontfiles = [f for p in args.font_path for f in get_font_files(p)]
+
     if args.docker:
         echo("==> DOCKER MODE ENABLED")
-        for font_dir in collect_files_by_dir(args.font_path):
+        for font_dir in collect_files_by_dir(fontfiles):
             patch_font_dir_docker(font_dir, args.output, fp_args, args.verbose)
     else:
-        for fontfile in args.font_path:
+        for fontfile in fontfiles:
             patch_single_font(Path(fontfile), args.output, fp_args, args.verbose)
 
     echo("fonts are patched", hue="green")
@@ -236,6 +248,5 @@ def main():
 
 
 if __name__ == "__main__":
-
     color = Color()
     main()
