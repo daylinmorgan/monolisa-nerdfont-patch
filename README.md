@@ -8,12 +8,13 @@ tested w/ MonoLisa v2.003
 <img src="./assets/help.svg" width=400>
 </p>
 
-## Dependencies
+## Getting Started
+
+### Dependencies
 
 - `python`
 - `make` (optional)
 - `fontforge` OR `docker`
-
 
 There are some caveats to invoking the `font-patcher` script.
 Some of which are explained by [nerd fonts](https://github.com/ryanoasis/nerd-fonts#font-patcher).
@@ -27,6 +28,12 @@ sudo pacman -S fontforge
 You can also download the version for your system from the releases in the fontforge [repo](https://github.com/fontforge/fontforge).
 
 If you prefer to use `docker` rather than install `fontforge` you can add `ARGS='--docker'` to calls to `make patch`.
+
+Next you may clone the repo to fetch the needed symbols/scripts for patching:
+
+```bash
+git clone --depth 1 git@github.com:daylinmorgan/monolisa-nerdfont-patch.git
+```
 
 ## Downloading MonoLisa
 
