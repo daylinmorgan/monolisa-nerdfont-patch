@@ -2,9 +2,9 @@ name: "Update Nerd Fonts"
 
 on:
   workflow_dispatch:
-  schedule:
+  # schedule:
     # 1st and 15th at 12:00 AM
-    - cron: "0 0 1,15 * *"
+    # - cron: "0 0 1,15 * *"
 
 permissions:
   contents: write
