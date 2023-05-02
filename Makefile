@@ -1,7 +1,7 @@
 -include .env
 ARGS ?= -c
 
-patch: ./bin/font-patcher ## apply nerd fonts patch |> -gs b_magenta -ms bold
+patch: ## apply nerd fonts patch |> -gs b_magenta -ms bold
 	@./patch-monolisa \
 		$(ARGS) \
 		-f MonoLisa/
@@ -24,6 +24,8 @@ lint: ## run pre-commit hooks
 
 clean: ## remove patched fonts
 	@rm -rf patched/*
+	@rm -f ./font-patcher-log.txt
+	@rm -f FontPatcher.zip
 
 # depends on daylinmorgan/yartsu
 assets/help.svg:

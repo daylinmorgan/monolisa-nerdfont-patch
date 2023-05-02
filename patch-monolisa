@@ -140,7 +140,7 @@ def patch_single_font(
     cmd = [
         "fontforge",
         "-script",
-        "./bin/font-patcher",
+        "./font-patcher",
         "--glyphdir",
         "./src/glyphs/",
         "-out",
@@ -182,8 +182,6 @@ def patch_font_dir_docker(
         f"{font_dir_path}:/in",
         "-v",
         f"{output_path}:/out",
-        "-u",
-        f"{os.getuid()}:{os.getegid()}",
         "nerdfonts/patcher",
     ]
 
