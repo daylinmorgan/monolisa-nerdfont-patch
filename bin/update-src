@@ -2,6 +2,6 @@
 
 rm -rf font-patcher
 wget https://github.com/ryanoasis/nerd-fonts/raw/master/FontPatcher.zip -O FontPatcher.zip
-unzip -u FontPatcher.zip -x "readme.md"
+unzip -o FontPatcher.zip -x "readme.md"
 
 echo "don't forget to commit your changes!"
