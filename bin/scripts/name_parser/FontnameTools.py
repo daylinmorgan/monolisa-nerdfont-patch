@@ -4,7 +4,6 @@
 import re
 import sys
 
-
 class FontnameTools:
     """Deconstruct a font filename to get standardized name parts"""
 
@@ -16,32 +15,32 @@ class FontnameTools:
     @staticmethod
     def camel_casify(word):
         """Remove blanks and use CamelCase for the new word"""
-        return "".join(map(FontnameTools.front_upper, word.split(" ")))
+        return ''.join(map(FontnameTools.front_upper, word.split(' ')))
 
     @staticmethod
     def camel_explode(word):
         """Explode CamelCase -> Camel Case"""
         # But do not explode "JetBrains" etc at string start...
         excludes = [
-            "JetBrains",
-            "DejaVu",
-            "OpenDyslexicAlta",
-            "OpenDyslexicMono",
-            "OpenDyslexic",
-            "DaddyTimeMono",
-            "InconsolataGo",
-            "ProFontWindows",
-            "ProFont",
-            "ProggyClean",
-        ]
-        m = re.match("(" + "|".join(excludes) + ")(.*)", word)
-        (prefix, word) = m.group(1, 2) if m != None else ("", word)
+                'JetBrains',
+                'DejaVu',
+                'OpenDyslexicAlta',
+                'OpenDyslexicMono',
+                'OpenDyslexic',
+                'DaddyTimeMono',
+                'InconsolataGo',
+                'ProFontWindows',
+                'ProFont',
+                'ProggyClean',
+                ]
+        m = re.match('(' + '|'.join(excludes) + ')(.*)', word)
+        (prefix, word) = m.group(1,2) if m != None else ('', word)
         if len(word) == 0:
             return prefix
-        parts = re.split("(?<=[a-z0-9])(?=[A-Z])", word)
+        parts = re.split('(?<=[a-z0-9])(?=[A-Z])', word)
         if len(prefix):
             parts.insert(0, prefix)
-        return " ".join(parts)
+        return ' '.join(parts)
 
     @staticmethod
     def drop_empty(l):
@@ -57,7 +56,7 @@ class FontnameTools:
                 all.append(thing)
             else:
                 all += thing
-        return " ".join(FontnameTools.drop_empty(all))
+        return ' '.join(FontnameTools.drop_empty(all))
 
     @staticmethod
     def unify_style_names(style_name):
@@ -65,20 +64,20 @@ class FontnameTools:
         known_names = {
             # Source of the table is the current sourcefonts
             # Left side needs to be lower case
-            "-": "",
-            "book": "",
-            "text": "",
-            "ce": "CE",
+            '-':            '',
+            'book':         '',
+            'text':         '',
+            'ce':           'CE',
             #'semibold':     'Demi',
-            "ob": "Oblique",
-            "it": "Italic",
-            "i": "Italic",
-            "b": "Bold",
-            "normal": "Regular",
-            "c": "Condensed",
-            "r": "Regular",
-            "m": "Medium",
-            "l": "Light",
+            'ob':           'Oblique',
+            'it':           'Italic',
+            'i':            'Italic',
+            'b':            'Bold',
+            'normal':       'Regular',
+            'c':            'Condensed',
+            'r':            'Regular',
+            'm':            'Medium',
+            'l':            'Light',
         }
         if style_name in known_names:
             return known_names[style_name.lower()]
@@ -89,7 +88,7 @@ class FontnameTools:
         """Find an entry in a list of dicts, return entry and in which list it was"""
         for i, d in enumerate(dicts):
             if key in d:
-                return (d[key], i)
+                return ( d[key], i )
         return (None, 0)
 
     @staticmethod
@@ -111,26 +110,20 @@ class FontnameTools:
         #               - has modifier: use second form of mod plus first form of weights2
         #               - has modifier: use second form of mod plus second form of widths
         name_rest = name
-        name_pre = ""
-        form = FontnameTools.get_shorten_form_idx(aggressive, "", 0)
+        name_pre = ''
+        form = FontnameTools.get_shorten_form_idx(aggressive, '', 0)
         for mod in FontnameTools.known_modifiers:
-            if name.startswith(mod) and len(name) > len(
-                mod
-            ):  # Second condition specifically for 'Demi'
+            if name.startswith(mod) and len(name) > len(mod): # Second condition specifically for 'Demi'
                 name_pre = FontnameTools.known_modifiers[mod][form]
-                name_rest = name[len(mod) :]
+                name_rest = name[len(mod):]
                 break
-        subst, i = FontnameTools.find_in_dicts(
-            name_rest, [FontnameTools.known_weights2, FontnameTools.known_widths]
-        )
+        subst, i = FontnameTools.find_in_dicts(name_rest, [ FontnameTools.known_weights2, FontnameTools.known_widths ])
         form = FontnameTools.get_shorten_form_idx(aggressive, name_pre, i)
         if isinstance(subst, tuple):
             return name_pre + subst[form]
         if not len(name_pre):
             # The following sets do not allow modifiers
-            subst, _ = FontnameTools.find_in_dicts(
-                name_rest, [FontnameTools.known_weights1, FontnameTools.known_slopes]
-            )
+            subst, _ = FontnameTools.find_in_dicts(name_rest, [ FontnameTools.known_weights1, FontnameTools.known_slopes ])
             if isinstance(subst, tuple):
                 return subst[form]
         return name
@@ -139,26 +132,21 @@ class FontnameTools:
     def short_styles(lists, aggressive):
         """Shorten all style names in a list or a list of lists"""
         if not len(lists) or not isinstance(lists[0], list):
-            return list(
-                map(lambda x: FontnameTools.shorten_style_name(x, aggressive), lists)
-            )
-        return [
-            list(map(lambda x: FontnameTools.shorten_style_name(x, aggressive), styles))
-            for styles in lists
-        ]
+            return list(map(lambda x: FontnameTools.shorten_style_name(x, aggressive), lists))
+        return [ list(map(lambda x: FontnameTools.shorten_style_name(x, aggressive), styles)) for styles in lists ]
 
     @staticmethod
     def make_oblique_style(weights, styles):
         """Move "Oblique" from weights to styles for font naming purposes"""
-        if "Oblique" in weights:
+        if 'Oblique' in weights:
             weights = list(weights)
-            weights.remove("Oblique")
+            weights.remove('Oblique')
             styles = list(styles)
-            styles.append("Oblique")
+            styles.append('Oblique')
         return (weights, styles)
 
     @staticmethod
-    def get_name_token(name, tokens, allow_regex_token=False):
+    def get_name_token(name, tokens, allow_regex_token = False):
         """Try to find any case insensitive token from tokens in the name, return tuple with found token-list and rest"""
         # The default mode (allow_regex_token = False) will try to find any verbatim string in the
         # tokens list (case insensitive matching) and give that tokens list item back with
@@ -168,29 +156,27 @@ class FontnameTools:
         #
         # Token are always used in a regex and may not capture, use non capturing
         # grouping if needed (?: ... )
-        lower_tokens = [t.lower() for t in tokens]
+        lower_tokens = [ t.lower() for t in tokens ]
         not_matched = ""
         all_tokens = []
         j = 1
-        regex = re.compile("(.*?)(" + "|".join(tokens) + ")(.*)", re.IGNORECASE)
+        regex = re.compile('(.*?)(' + '|'.join(tokens) + ')(.*)', re.IGNORECASE)
         while j:
             j = regex.match(name)
             if not j:
                 break
             if len(j.groups()) != 3:
-                sys.exit("Malformed regex in FontnameTools.get_name_token()")
-            not_matched += (
-                " " + j.groups()[0]
-            )  # Blanc prevents unwanted concatenation of unmatched substrings
+                sys.exit('Malformed regex in FontnameTools.get_name_token()')
+            not_matched += ' ' + j.groups()[0] # Blanc prevents unwanted concatenation of unmatched substrings
             tok = j.groups()[1].lower()
             if tok in lower_tokens:
                 tok = tokens[lower_tokens.index(tok)]
             tok = FontnameTools.unify_style_names(tok)
             if len(tok):
                 all_tokens.append(tok)
-            name = j.groups()[2]  # Recurse rest
-        not_matched += " " + name
-        return (not_matched.strip(), all_tokens)
+            name = j.groups()[2] # Recurse rest
+        not_matched += ' ' + name
+        return ( not_matched.strip(), all_tokens )
 
     @staticmethod
     def postscript_char_filter(name):
@@ -199,48 +185,42 @@ class FontnameTools:
         # except for the 10 characters '[', ']', '(', ')', '{', '}', '<', '>', '/', '%'
         out = ""
         for c in name:
-            if c in "[](){}<>/%" or ord(c) < 33 or ord(c) > 126:
+            if c in '[](){}<>/%' or ord(c) < 33 or ord(c) > 126:
                 continue
             out += c
         return out
 
     SIL_TABLE = [
-        ("(a)nonymous", r"\1nonymice"),
-        ("(b)itstream( ?)(v)era( ?sans ?mono)?", r"\1itstrom\2Wera"),
-        ("(s)ource", r"\1auce"),
-        ("(h)ermit", r"\1urmit"),
-        ("(h)asklig", r"\1asklug"),
-        ("(s)hare", r"\1hure"),
-        ("IBM[- ]?plex", r"Blex"),  # We do not keep the case here
-        ("(t)erminus", r"\1erminess"),
-        ("(l)iberation", r"\1iteration"),
-        ("iA([- ]?)writer", r"iM\1Writing"),
-        ("(a)nka/(c)oder", r"\1na\2onder"),
-        ("(c)ascadia( ?)(c)ode", r"\1askaydia\2\3ove"),
-        ("(c)ascadia( ?)(m)ono", r"\1askaydia\2\3ono"),
-        ("(m)( ?)plus", r"\1+"),  # Added this, because they use a plus symbol :->
-        ("Gohufont", r"GohuFont"),  # Correct to CamelCase
+        ( '(a)nonymous',                r'\1nonymice' ),
+        ( '(b)itstream( ?)(v)era( ?sans ?mono)?', r'\1itstrom\2Wera' ),
+        ( '(s)ource',                   r'\1auce' ),
+        ( '(h)ermit',                   r'\1urmit' ),
+        ( '(h)asklig',                  r'\1asklug' ),
+        ( '(s)hare',                    r'\1hure' ),
+        ( 'IBM[- ]?plex',               r'Blex' ), # We do not keep the case here
+        ( '(t)erminus',                 r'\1erminess' ),
+        ( '(l)iberation',               r'\1iteration' ),
+        ( 'iA([- ]?)writer',            r'iM\1Writing' ),
+        ( '(a)nka/(c)oder',             r'\1na\2onder' ),
+        ( '(c)ascadia( ?)(c)ode',       r'\1askaydia\2\3ove' ),
+        ( '(c)ascadia( ?)(m)ono',       r'\1askaydia\2\3ono' ),
+        ( '(m)( ?)plus',                r'\1+'), # Added this, because they use a plus symbol :->
+        ( 'Gohufont',                   r'GohuFont'), # Correct to CamelCase
         # Noone cares that font names starting with a digit are forbidden:
-        ("IBM 3270", r"3270"),  # for historical reasons and 'IBM' is a TM or something
+        ( 'IBM 3270',                   r'3270'), # for historical reasons and 'IBM' is a TM or something
         # Some name parts that are too long for us
-        ("(.*sans ?m)ono", r"\1"),  # Various SomenameSansMono fonts
-        ("(.*code ?lat)in Expanded", r"\1X"),  # for 'M PLUS Code Latin Expanded'
-        ("(.*code ?lat)in", r"\1"),  # for 'M PLUS Code Latin'
-        ("(b)ig( ?)(b)lue( ?)(t)erminal", r"\1ig\3lue\5erm"),  # Shorten BigBlueTerminal
-        ("(.*)437TT", r"\g<1>437"),  # Shorten BigBlueTerminal 437 TT even further
-        ("(.*dyslexic ?alt)a", r"\1"),  # Open Dyslexic Alta -> Open Dyslexic Alt
-        ("(.*dyslexic ?m)ono", r"\1"),  # Open Dyslexic Mono -> Open Dyslexic M
-        ("(overpass ?m)ono", r"\1"),  # Overpass Mono -> Overpass M
-        ("(proggyclean) ?tt", r"\1"),  # Remove TT from ProggyClean
-        (
-            "(terminess) ?\(ttf\)",
-            r"\1",
-        ),  # Remove TTF from Terminus (after renamed to Terminess)
-        ("(im ?writing ?q)uattro", r"\1uat"),  # Rename iM Writing Quattro to Quat
-        (
-            "(im ?writing ?(mono|duo|quat)) ?s",
-            r"\1",
-        ),  # Remove S from all iM Writing styles
+        ( '(.*sans ?m)ono',             r'\1'), # Various SomenameSansMono fonts
+        ( '(.*code ?lat)in Expanded',   r'\1X'), # for 'M PLUS Code Latin Expanded'
+        ( '(.*code ?lat)in',            r'\1'), # for 'M PLUS Code Latin'
+        ( '(b)ig( ?)(b)lue( ?)(t)erminal', r'\1ig\3lue\5erm'), # Shorten BigBlueTerminal
+        ( '(.*)437TT',                  r'\g<1>437'), # Shorten BigBlueTerminal 437 TT even further
+        ( '(.*dyslexic ?alt)a',         r'\1'), # Open Dyslexic Alta -> Open Dyslexic Alt
+        ( '(.*dyslexic ?m)ono',         r'\1'), # Open Dyslexic Mono -> Open Dyslexic M
+        ( '(overpass ?m)ono',           r'\1'), # Overpass Mono -> Overpass M
+        ( '(proggyclean) ?tt',          r'\1'), # Remove TT from ProggyClean
+        ( '(terminess) ?\(ttf\)',       r'\1'), # Remove TTF from Terminus (after renamed to Terminess)
+        ( '(im ?writing ?q)uattro',     r'\1uat'), # Rename iM Writing Quattro to Quat
+        ( '(im ?writing ?(mono|duo|quat)) ?s', r'\1'), # Remove S from all iM Writing styles
     ]
 
     # From https://adobe-type-tools.github.io/font-tech-notes/pdfs/5088.FontNames.pdf
@@ -254,103 +234,98 @@ class FontnameTools:
     #   - has modifier: use second form of mod plus first form of weights2
     #   - has modifier: use second form of mod plus second form of widths
     # This is encoded in get_shorten_form_idx()
-    known_weights1 = {  # can not take modifiers
-        "Medium": ("Md", "Med"),
-        "Nord": ("Nd", "Nord"),
-        "Book": ("Bk", "Book"),
-        "Poster": ("Po", "Poster"),
-        "Demi": (
-            "Dm",
-            "Demi",
-        ),  # Demi is sometimes used as a weight, sometimes as a modifier
-        "Regular": ("Rg", "Reg"),
-        "Display": ("DS", "Disp"),
-        "Super": ("Su", "Sup"),
-        "Retina": ("Rt", "Ret"),
+    known_weights1 = { # can not take modifiers
+        'Medium': ('Md', 'Med'),
+        'Nord': ('Nd', 'Nord'),
+        'Book': ('Bk', 'Book'),
+        'Poster': ('Po', 'Poster'),
+        'Demi': ('Dm', 'Demi'), # Demi is sometimes used as a weight, sometimes as a modifier
+        'Regular': ('Rg', 'Reg'),
+        'Display': ('DS', 'Disp'),
+        'Super': ('Su', 'Sup'),
+        'Retina': ('Rt', 'Ret'),
     }
-    known_weights2 = {  # can take modifiers
-        "Black": ("Blk", "Black"),
-        "Bold": ("Bd", "Bold"),
-        "Heavy": ("Hv", "Heavy"),
-        "Thin": ("Th", "Thin"),
-        "Light": ("Lt", "Light"),
-        " ": (),  # Just for CodeClimate :-/
+    known_weights2 = { # can take modifiers
+        'Black': ('Blk', 'Black'),
+        'Bold': ('Bd', 'Bold'),
+        'Heavy': ('Hv', 'Heavy'),
+        'Thin': ('Th', 'Thin'),
+        'Light': ('Lt', 'Light'),
+        ' ': (), # Just for CodeClimate :-/
     }
-    known_widths = {  # can take modifiers
-        "Compressed": ("Cm", "Comp"),
-        "Extended": ("Ex", "Extd"),
-        "Condensed": ("Cn", "Cond"),
-        "Narrow": ("Nr", "Narrow"),
-        "Compact": ("Ct", "Compact"),
+    known_widths = { # can take modifiers
+        'Compressed': ('Cm', 'Comp'),
+        'Extended': ('Ex', 'Extd'),
+        'Condensed': ('Cn', 'Cond'),
+        'Narrow': ('Nr', 'Narrow'),
+        'Compact': ('Ct', 'Compact'),
     }
-    known_slopes = {  # can not take modifiers
-        "Inclined": ("Ic", "Incl"),
-        "Oblique": ("Obl", "Obl"),
-        "Italic": ("It", "Italic"),
-        "Upright": ("Up", "Uprght"),
-        "Kursiv": ("Ks", "Kurs"),
-        "Sloped": ("Sl", "Slop"),
+    known_slopes = { # can not take modifiers
+        'Inclined': ('Ic', 'Incl'),
+        'Oblique': ('Obl', 'Obl'),
+        'Italic': ('It', 'Italic'),
+        'Upright': ('Up', 'Uprght'),
+        'Kursiv': ('Ks', 'Kurs'),
+        'Sloped': ('Sl', 'Slop'),
     }
     known_modifiers = {
-        "Demi": ("Dm", "Dem"),
-        "Ultra": ("Ult", "Ult"),
-        "Semi": ("Sm", "Sem"),
-        "Extra": ("X", "Ext"),
+        'Demi': ('Dm', 'Dem'),
+        'Ultra': ('Ult', 'Ult'),
+        'Semi': ('Sm', 'Sem'),
+        'Extra': ('X', 'Ext'),
     }
 
     @staticmethod
     def is_keep_regular(basename):
         """This has been decided by the font designers, we need to mimic that (for comparison purposes)"""
         KEEP_REGULAR = [
-            "Agave",
-            "Arimo",
-            "Aurulent",
-            "Cascadia",
-            "Cousine",
-            "Fantasque",
-            "Fira",
-            "Overpass",
-            "Lilex",
-            "Inconsolata$",  # not InconsolataGo
-            "IAWriter",
-            "Meslo",
-            "Monoid",
-            "Mononoki",
-            "Hack",
-            "JetBrains Mono",
-            "Noto Sans",
-            "Noto Serif",
-            "Victor",
+            'Agave',
+            'Arimo',
+            'Aurulent',
+            'Cascadia',
+            'Cousine',
+            'Fantasque',
+            'Fira',
+
+            'Overpass',
+            'Lilex',
+            'Inconsolata$', # not InconsolataGo
+            'IAWriter',
+            'Meslo',
+            'Monoid',
+            'Mononoki',
+            'Hack',
+            'JetBrains Mono',
+            'Noto Sans',
+            'Noto Serif',
+            'Victor',
         ]
         for kr in KEEP_REGULAR:
-            if (basename.rstrip() + "$").startswith(kr):
-                return True
+            if (basename.rstrip() + '$').startswith(kr): return True
         return False
 
     @staticmethod
     def _parse_simple_font_name(name):
         """Parse a filename that does not follow the 'FontFamilyName-FontStyle' pattern"""
         # No dash in name, maybe we have blanc separated filename?
-        if " " in name:
-            return FontnameTools.parse_font_name(name.replace(" ", "-"))
+        if ' ' in name:
+            return FontnameTools.parse_font_name(name.replace(' ', '-'))
         # Do we have a number-name boundary?
-        p = re.split("(?<=[0-9])(?=[a-zA-Z])", name)
+        p = re.split('(?<=[0-9])(?=[a-zA-Z])', name)
         if len(p) > 1:
-            return FontnameTools.parse_font_name("-".join(p))
+            return FontnameTools.parse_font_name('-'.join(p))
         # Or do we have CamelCase?
         n = FontnameTools.camel_explode(name)
         if n != name:
-            return FontnameTools.parse_font_name(n.replace(" ", "-"))
-        return (False, FontnameTools.camel_casify(name), [], [], [], "")
+            return FontnameTools.parse_font_name(n.replace(' ', '-'))
+        return (False, FontnameTools.camel_casify(name), [], [], [], '')
 
     @staticmethod
     def parse_font_name(name):
         """Expects a filename following the 'FontFamilyName-FontStyle' pattern and returns ... parts"""
-        name = re.sub(
-            r"\bsemi-condensed\b", "SemiCondensed", name, 1, re.IGNORECASE
-        )  # Just for "3270 Semi-Condensed" :-/
-        name = re.sub("[_\s]+", " ", name)
-        matches = re.match(r"([^-]+)(?:-(.*))?", name)
+        name = re.sub(r'\bsemi-condensed\b', 'SemiCondensed', name, 1, re.IGNORECASE) # Just for "3270 Semi-Condensed" :-/
+        name = re.sub('[_\s]+', ' ', name)
+        matches = re.match(r'([^-]+)(?:-(.*))?', name)
         familyname = FontnameTools.camel_casify(matches.group(1))
         style = matches.group(2)
 
@@ -361,81 +336,47 @@ class FontnameTools:
         # Weights end up as Typographic Family parts ('after the dash')
         # Styles end up as Family parts (for classic grouping of four)
         # Others also end up in Typographic Family ('before the dash')
-        weights = (
-            [
-                m + s
-                for s in list(FontnameTools.known_weights2)
-                + list(FontnameTools.known_widths)
-                for m in list(FontnameTools.known_modifiers) + [""]
-                if m != s
-            ]
-            + list(FontnameTools.known_weights1)
-            + list(FontnameTools.known_slopes)
-        )
-        styles = [
-            "Bold",
-            "Italic",
-            "Regular",
-            "Normal",
-        ]
-        weights = [w for w in weights if w not in styles]
+        weights = [ m + s
+                for s in list(FontnameTools.known_weights2) + list(FontnameTools.known_widths)
+                for m in list(FontnameTools.known_modifiers) + [''] if m != s
+            ] + list(FontnameTools.known_weights1) + list(FontnameTools.known_slopes)
+        styles = [ 'Bold', 'Italic', 'Regular', 'Normal', ]
+        weights = [ w for w in weights if w not in styles ]
         # Some font specialities:
         other = [
-            "-",
-            "Book",
-            "For",
-            "Powerline",
-            "Text",  # Plex
-            "IIx",  # Profont IIx
-            "LGC",  # Inconsolata LGC
-            r"\bCE\b",  # ProggycleanTT CE
-            r"[12][cmp]n?",  # MPlus
-            r"(?:uni-)?1[14]",  # GohuFont uni
+            '-', 'Book', 'For', 'Powerline',
+            'Text',             # Plex
+            'IIx',              # Profont IIx
+            'LGC',              # Inconsolata LGC
+            r'\bCE\b',          # ProggycleanTT CE
+            r'[12][cmp]n?',     # MPlus
+            r'(?:uni-)?1[14]',  # GohuFont uni
         ]
 
         # Sometimes used abbreviations
-        weight_abbrevs = [
-            "ob",
-            "c",
-            "m",
-            "l",
-        ]
-        style_abbrevs = [
-            "it",
-            "r",
-            "b",
-            "i",
-        ]
+        weight_abbrevs = [ 'ob', 'c', 'm', 'l', ]
+        style_abbrevs = [ 'it', 'r', 'b', 'i', ]
 
-        (style, weight_token) = FontnameTools.get_name_token(style, weights)
-        (style, style_token) = FontnameTools.get_name_token(style, styles)
-        (style, other_token) = FontnameTools.get_name_token(style, other, True)
-        if (
-            len(style) < 4 and style.lower() != "pro"
-        ):  # Prevent 'r' of Pro to be detected as style_abbrev
-            (style, weight_token_abbrevs) = FontnameTools.get_name_token(
-                style, weight_abbrevs
-            )
-            (style, style_token_abbrevs) = FontnameTools.get_name_token(
-                style, style_abbrevs
-            )
+        ( style, weight_token ) = FontnameTools.get_name_token(style, weights)
+        ( style, style_token ) = FontnameTools.get_name_token(style, styles)
+        ( style, other_token ) = FontnameTools.get_name_token(style, other, True)
+        if (len(style) < 4
+                and style.lower() != 'pro'): # Prevent 'r' of Pro to be detected as style_abbrev
+            ( style, weight_token_abbrevs ) = FontnameTools.get_name_token(style, weight_abbrevs)
+            ( style, style_token_abbrevs ) = FontnameTools.get_name_token(style, style_abbrevs)
             weight_token += weight_token_abbrevs
             style_token += style_token_abbrevs
-        while "Regular" in style_token and len(style_token) > 1:
+        while 'Regular' in style_token and len(style_token) > 1:
             # Correct situation where "Regular" and something else is given
-            style_token.remove("Regular")
+            style_token.remove('Regular')
 
         # Recurse to see if unmatched stuff between dashes can belong to familyname
-        matches2 = re.match(r"(\w+)-(.*)", style)
+        matches2 = re.match(r'(\w+)-(.*)', style)
         if matches2:
-            return FontnameTools.parse_font_name(
-                familyname + matches2.group(1) + "-" + matches2.group(2)
-            )
+            return FontnameTools.parse_font_name(familyname + matches2.group(1) + '-' + matches2.group(2))
 
-        style = re.sub(
-            r"(^|\s)\d+(\.\d+)+(\s|$)", r"\1\3", style
-        )  # Remove (free standing) version numbers
-        style_parts = FontnameTools.drop_empty(style.split(" "))
-        style = " ".join(map(FontnameTools.front_upper, style_parts))
+        style = re.sub(r'(^|\s)\d+(\.\d+)+(\s|$)', r'\1\3', style) # Remove (free standing) version numbers
+        style_parts = FontnameTools.drop_empty(style.split(' '))
+        style = ' '.join(map(FontnameTools.front_upper, style_parts))
         familyname = FontnameTools.camel_explode(familyname)
         return (True, familyname, weight_token, style_token, other_token, style)

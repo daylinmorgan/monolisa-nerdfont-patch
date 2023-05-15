@@ -4,32 +4,20 @@
 import re
 from FontnameTools import FontnameTools
 
-
 class FontnameParser:
     """Parse a font name and generate all kinds of names"""
 
     def __init__(self, filename, logger):
         """Parse a font filename and store the results"""
         self.parse_ok = False
-        self.use_short_families = (
-            False,
-            False,
-            False,
-        )  # ( camelcase name, short styles, aggressive )
-        self.keep_regular_in_family = None  # None = auto, True, False
+        self.use_short_families = (False, False, False) # ( camelcase name, short styles, aggressive )
+        self.keep_regular_in_family = None # None = auto, True, False
         self.suppress_preferred_if_identical = True
-        self.family_suff = ""
-        self.ps_fontname_suff = ""
-        self.short_family_suff = ""
+        self.family_suff = ''
+        self.ps_fontname_suff = ''
+        self.short_family_suff = ''
         self.name_subst = []
-        [
-            self.parse_ok,
-            self._basename,
-            self.weight_token,
-            self.style_token,
-            self.other_token,
-            self._rest,
-        ] = FontnameTools.parse_font_name(filename)
+        [ self.parse_ok, self._basename, self.weight_token, self.style_token, self.other_token, self._rest ] = FontnameTools.parse_font_name(filename)
         self.basename = self._basename
         self.rest = self._rest
         self.add_name_substitution_table(FontnameTools.SIL_TABLE)
@@ -38,25 +26,21 @@ class FontnameParser:
 
     def _make_ps_name(self, n, is_family):
         """Helper to limit font name length in PS names"""
-        fam = "family " if is_family else ""
+        fam = 'family ' if is_family else ''
         limit = 31 if is_family else 63
         if len(n) <= limit:
             return n
-        r = re.search("(.*)(-.*)", n)
+        r = re.search('(.*)(-.*)', n)
         if not r:
             new_n = n[:limit]
         else:
             q = limit - len(r.groups()[1])
             if q < 1:
                 q = 1
-                self.logger.error(
-                    "====-< Shortening too long PS {}name: Garbage warning".format(fam)
-                )
+                self.logger.error('====-< Shortening too long PS {}name: Garbage warning'. format(fam))
             new_n = r.groups()[0][:q] + r.groups()[1]
         if new_n != n:
-            self.logger.error(
-                "====-< Shortening too long PS {}name: {} -> {}".format(fam, n, new_n)
-            )
+            self.logger.error('====-< Shortening too long PS {}name: {} -> {}'.format(fam, n, new_n))
         return new_n
 
     def _shortened_name(self):
@@ -64,7 +48,7 @@ class FontnameParser:
         if not self.use_short_families[0]:
             return (self.basename, self.rest)
         else:
-            return (FontnameTools.concat(self.basename, self.rest).replace(" ", ""), "")
+            return (FontnameTools.concat(self.basename, self.rest).replace(' ', ''), '')
 
     def set_keep_regular_in_family(self, keep):
         """Familyname may contain 'Regular' where it should normally be suppressed"""
@@ -79,7 +63,7 @@ class FontnameParser:
         # is not needed, or rather contraproductive. This can not be detected on a
         # font file level but needs to be specified per family from the outside.
         # Returns true if setting was successful.
-        if "Italic" in self.style_token:
+        if 'Italic' in self.style_token:
             self.rename_oblique = True
             return not noitalic
         self.rename_oblique = not noitalic
@@ -92,7 +76,7 @@ class FontnameParser:
     def inject_suffix(self, family, ps_fontname, short_family):
         """Add a custom additonal string that shows up in the resulting names"""
         self.family_suff = family.strip()
-        self.ps_fontname_suff = ps_fontname.replace(" ", "")
+        self.ps_fontname_suff = ps_fontname.replace(' ', '')
         self.short_family_suff = short_family.strip()
         return self
 
@@ -102,7 +86,7 @@ class FontnameParser:
         # prefix is either a string or False/True
         if isinstance(prefix, str):
             prefix = self._basename.startswith(prefix)
-        self.use_short_families = (camelcase_name, prefix, aggressive)
+        self.use_short_families = ( camelcase_name, prefix, aggressive )
         return self
 
     def add_name_substitution_table(self, table):
@@ -113,29 +97,27 @@ class FontnameParser:
         self.basename = self._basename
         self.rest = self._rest
         for regex, replacement in self.name_subst:
-            base_and_rest = self.basename + (" " + self.rest if len(self.rest) else "")
+            base_and_rest = self.basename + (' ' + self.rest if len(self.rest) else '')
             m = re.match(regex, base_and_rest, re.IGNORECASE)
             if not m:
                 continue
             i = len(self.basename) - len(m.group(0))
             if i < 0:
                 self.basename = m.expand(replacement).rstrip()
-                self.rest = self.rest[-(i + 1) :].lstrip()
+                self.rest = self.rest[-(i+1):].lstrip()
             else:
-                self.basename = m.expand(replacement) + self.basename[len(m.group(0)) :]
+                self.basename = m.expand(replacement) + self.basename[len(m.group(0)):]
         return self
 
     def drop_for_powerline(self):
         """Remove 'for Powerline' from all names (can not be undone)"""
-        if "Powerline" in self.other_token:
-            idx = self.other_token.index("Powerline")
+        if 'Powerline' in self.other_token:
+            idx = self.other_token.index('Powerline')
             self.other_token.pop(idx)
-            if idx > 0 and self.other_token[idx - 1] == "For":
+            if idx > 0 and self.other_token[idx - 1] == 'For':
                 self.other_token.pop(idx - 1)
-        self._basename = re.sub(
-            r"(\b|for\s?)?powerline\b", "", self._basename, 1, re.IGNORECASE
-        ).strip()
-        self.add_name_substitution_table(self.name_subst)  # re-evaluate
+        self._basename = re.sub(r'(\b|for\s?)?powerline\b', '', self._basename, 1, re.IGNORECASE).strip()
+        self.add_name_substitution_table(self.name_subst) # re-evaluate
         return self
 
     ### Following the creation of the name parts:
@@ -166,26 +148,20 @@ class FontnameParser:
         styles = self.style_token
         weights = self.weight_token
         if self.keep_regular_in_family == None:
-            keep_regular = FontnameTools.is_keep_regular(
-                self._basename + " " + self._rest
-            )
+            keep_regular = FontnameTools.is_keep_regular(self._basename + ' ' + self._rest)
         else:
             keep_regular = self.keep_regular_in_family
-        if "Regular" in styles and (
-            not keep_regular or len(self.weight_token) > 0
-        ):  # This is actually a malformed font name
+        if ('Regular' in styles
+                and (not keep_regular
+                    or len(self.weight_token) > 0)): # This is actually a malformed font name
             styles = list(self.style_token)
-            styles.remove("Regular")
+            styles.remove('Regular')
         # For naming purposes we want Oblique to be part of the styles
         (weights, styles) = FontnameTools.make_oblique_style(weights, styles)
         (name, rest) = self._shortened_name()
         if self.use_short_families[1]:
-            [weights, styles] = FontnameTools.short_styles(
-                [weights, styles], self.use_short_families[2]
-            )
-        return FontnameTools.concat(
-            name, rest, self.other_token, self.short_family_suff, weights, styles
-        )
+            [ weights, styles ] = FontnameTools.short_styles([ weights, styles ], self.use_short_families[2])
+        return FontnameTools.concat(name, rest, self.other_token, self.short_family_suff, weights, styles)
 
     def psname(self):
         """Get the SFNT PostScriptName (ID 6)"""
@@ -196,12 +172,10 @@ class FontnameParser:
         if self.use_short_families[1]:
             styles = FontnameTools.short_styles(styles, self.use_short_families[2])
             weights = FontnameTools.short_styles(weights, self.use_short_families[2])
-        fam = FontnameTools.camel_casify(
-            FontnameTools.concat(name, rest, self.other_token, self.ps_fontname_suff)
-        )
+        fam = FontnameTools.camel_casify(FontnameTools.concat(name, rest, self.other_token, self.ps_fontname_suff))
         sub = FontnameTools.camel_casify(FontnameTools.concat(weights, styles))
         if len(sub) > 0:
-            sub = "-" + sub
+            sub = '-' + sub
         fam = FontnameTools.postscript_char_filter(fam)
         sub = FontnameTools.postscript_char_filter(sub)
         return self._make_ps_name(fam + sub, False)
@@ -212,7 +186,7 @@ class FontnameParser:
         pfn = FontnameTools.concat(name, rest, self.other_token, self.family_suff)
         if self.suppress_preferred_if_identical and pfn == self.family():
             # Do not set if identical to ID 1
-            return ""
+            return ''
         return pfn
 
     def preferred_styles(self):
@@ -224,7 +198,7 @@ class FontnameParser:
         pfs = FontnameTools.concat(weights, styles)
         if self.suppress_preferred_if_identical and pfs == self.subfamily():
             # Do not set if identical to ID 2
-            return ""
+            return ''
         return pfs
 
     def family(self):
@@ -237,8 +211,8 @@ class FontnameParser:
         if not self.rename_oblique:
             (weights, styles) = FontnameTools.make_oblique_style(weights, [])
         if self.use_short_families[1]:
-            [other, weights] = FontnameTools.short_styles([other, weights], aggressive)
-        weights = [w if w != "Oblique" else "Obl" for w in weights]
+            [ other, weights ] = FontnameTools.short_styles([ other, weights ], aggressive)
+        weights = [ w if w != 'Oblique' else 'Obl' for w in weights ]
         return FontnameTools.concat(name, rest, other, self.short_family_suff, weights)
 
     def subfamily(self):
@@ -248,11 +222,11 @@ class FontnameParser:
         if not self.rename_oblique:
             (weights, styles) = FontnameTools.make_oblique_style(weights, styles)
         if len(styles) == 0:
-            if "Oblique" in weights:
-                return FontnameTools.concat(styles, "Italic")
-            return "Regular"
-        if "Oblique" in weights and not "Italic" in styles:
-            return FontnameTools.concat(styles, "Italic")
+            if 'Oblique' in weights:
+                return FontnameTools.concat(styles, 'Italic')
+            return 'Regular'
+        if 'Oblique' in weights and not 'Italic' in styles:
+                return FontnameTools.concat(styles, 'Italic')
         return FontnameTools.concat(styles)
 
     def ps_familyname(self):
@@ -265,45 +239,33 @@ class FontnameParser:
     def macstyle(self, style):
         """Modify a given macStyle value for current name, just bits 0 and 1 touched"""
         b = style & (~3)
-        b |= 1 if "Bold" in self.style_token else 0
-        b |= 2 if "Italic" in self.style_token else 0
+        b |= 1 if 'Bold' in self.style_token else 0
+        b |= 2 if 'Italic' in self.style_token else 0
         return b
 
     def fs_selection(self, fs):
         """Modify a given fsSelection value for current name, bits 0, 5, 6, 8, 9 touched"""
-        ITALIC = 1 << 0
-        BOLD = 1 << 5
-        REGULAR = 1 << 6
-        WWS = 1 << 8
-        OBLIQUE = 1 << 9
+        ITALIC = 1 << 0; BOLD = 1 << 5; REGULAR = 1 << 6; WWS = 1 << 8; OBLIQUE = 1 << 9
         b = fs & (~(ITALIC | BOLD | REGULAR | WWS | OBLIQUE))
-        if "Bold" in self.style_token:
+        if 'Bold' in self.style_token:
             b |= BOLD
         # Ignore Italic if we have Oblique
-        if "Oblique" in self.weight_token:
+        if 'Oblique' in self.weight_token:
             b |= OBLIQUE
-        elif "Italic" in self.style_token:
+        elif 'Italic' in self.style_token:
             b |= ITALIC
         # Regular is just the basic weight
-        if len(self.weight_token) == 0:
+        if len(self.weight_token) == 0 and not b & (ITALIC | BOLD | OBLIQUE):
             b |= REGULAR
-        b |= WWS  # We assert this by our naming process
+        b |= WWS # We assert this by our naming process
         return b
 
     def checklen(self, max_len, entry_id, name):
         """Check the length of a name string and report violations"""
         if len(name) <= max_len:
-            self.logger.debug(
-                "=====> {:18} ok       ({:2} <={:2}): {}".format(
-                    entry_id, len(name), max_len, name
-                )
-            )
+            self.logger.debug('=====> {:18} ok       ({:2} <={:2}): {}'.format(entry_id, len(name), max_len, name))
         else:
-            self.logger.error(
-                "====-< {:18} too long ({:2} > {:2}): {}".format(
-                    entry_id, len(name), max_len, name
-                )
-            )
+            self.logger.error('====-< {:18} too long ({:2} > {:2}): {}'.format(entry_id, len(name), max_len, name))
         return name
 
     def rename_font(self, font):
@@ -339,78 +301,32 @@ class FontnameParser:
         #    and it is actually embedded as empty string, but empty strings are not
         #    shown if you query the sfnt_names *rolleyes*
 
-        version_tag = ""
+        version_tag = ''
         sfnt_list = []
-        TO_DEL = [
-            "Family",
-            "SubFamily",
-            "Fullname",
-            "PostScriptName",
-            "Preferred Family",
-            "Preferred Styles",
-            "Compatible Full",
-            "WWS Family",
-            "WWS Subfamily",
-            "UniqueID",
-            "CID findfont Name",
-        ]
+        TO_DEL = ['Family', 'SubFamily', 'Fullname', 'PostScriptName', 'Preferred Family',
+                'Preferred Styles', 'Compatible Full', 'WWS Family', 'WWS Subfamily',
+                'UniqueID', 'CID findfont Name']
         # Remove these entries in all languages and add (at least the vital ones) some
         # back, but only as 'English (US)'. This makes sure we do not leave contradicting
         # names over different languages.
         for l, k, v in list(font.sfnt_names):
             if not k in TO_DEL:
-                sfnt_list += [(l, k, v)]
-                if k == "Version" and l == "English (US)":
-                    version_tag = " " + v.split()[-1]
+                sfnt_list += [( l, k, v )]
+                if k == 'Version' and l == 'English (US)':
+                    version_tag = ' ' + v.split()[-1]
 
-        sfnt_list += [
-            (
-                "English (US)",
-                "Family",
-                self.checklen(31, "Family (ID 1)", self.family()),
-            )
-        ]  # 1
-        sfnt_list += [
-            (
-                "English (US)",
-                "SubFamily",
-                self.checklen(31, "SubFamily (ID 2)", self.subfamily()),
-            )
-        ]  # 2
-        sfnt_list += [("English (US)", "UniqueID", self.fullname() + version_tag)]  # 3
-        sfnt_list += [
-            (
-                "English (US)",
-                "Fullname",
-                self.checklen(63, "Fullname (ID 4)", self.fullname()),
-            )
-        ]  # 4
-        sfnt_list += [
-            (
-                "English (US)",
-                "PostScriptName",
-                self.checklen(63, "PSN (ID 6)", self.psname()),
-            )
-        ]  # 6
+        sfnt_list += [( 'English (US)', 'Family', self.checklen(31, 'Family (ID 1)', self.family()) )] # 1
+        sfnt_list += [( 'English (US)', 'SubFamily', self.checklen(31, 'SubFamily (ID 2)', self.subfamily()) )] # 2
+        sfnt_list += [( 'English (US)', 'UniqueID', self.fullname() + version_tag )] # 3
+        sfnt_list += [( 'English (US)', 'Fullname', self.checklen(63, 'Fullname (ID 4)', self.fullname()) )] # 4
+        sfnt_list += [( 'English (US)', 'PostScriptName', self.checklen(63, 'PSN (ID 6)', self.psname()) )] # 6
 
         p_fam = self.preferred_family()
         if len(p_fam):
-            sfnt_list += [
-                (
-                    "English (US)",
-                    "Preferred Family",
-                    self.checklen(31, "PrefFamily (ID 16)", p_fam),
-                )
-            ]  # 16
+            sfnt_list += [( 'English (US)', 'Preferred Family', self.checklen(31, 'PrefFamily (ID 16)', p_fam) )] # 16
         p_sty = self.preferred_styles()
         if len(p_sty):
-            sfnt_list += [
-                (
-                    "English (US)",
-                    "Preferred Styles",
-                    self.checklen(31, "PrefStyles (ID 17)", p_sty),
-                )
-            ]  # 17
+            sfnt_list += [( 'English (US)', 'Preferred Styles', self.checklen(31, 'PrefStyles (ID 17)', p_sty) )] # 17
 
         font.sfnt_names = tuple(sfnt_list)
 
