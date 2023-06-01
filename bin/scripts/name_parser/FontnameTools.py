@@ -5,7 +5,7 @@ import re
 import sys
 
 class FontnameTools:
-    """Deconstruct a font filename to get standardized name parts"""
+    """Deconstruct a fontname to get standardized name parts"""
 
     @staticmethod
     def front_upper(word):
@@ -64,24 +64,11 @@ class FontnameTools:
         known_names = {
             # Source of the table is the current sourcefonts
             # Left side needs to be lower case
-            '-':            '',
             'book':         '',
-            'text':         '',
             'ce':           'CE',
-            #'semibold':     'Demi',
-            'ob':           'Oblique',
-            'it':           'Italic',
-            'i':            'Italic',
-            'b':            'Bold',
             'normal':       'Regular',
-            'c':            'Condensed',
-            'r':            'Regular',
-            'm':            'Medium',
-            'l':            'Light',
         }
-        if style_name in known_names:
-            return known_names[style_name.lower()]
-        return style_name
+        return known_names.get(style_name.lower(), style_name)
 
     @staticmethod
     def find_in_dicts(key, dicts):
@@ -146,7 +133,7 @@ class FontnameTools:
         return (weights, styles)
 
     @staticmethod
-    def get_name_token(name, tokens, allow_regex_token = False):
+    def get_name_token(name, tokens):
         """Try to find any case insensitive token from tokens in the name, return tuple with found token-list and rest"""
         # The default mode (allow_regex_token = False) will try to find any verbatim string in the
         # tokens list (case insensitive matching) and give that tokens list item back with
@@ -160,7 +147,11 @@ class FontnameTools:
         not_matched = ""
         all_tokens = []
         j = 1
-        regex = re.compile('(.*?)(' + '|'.join(tokens) + ')(.*)', re.IGNORECASE)
+        token_regex = '|'.join(tokens)
+        # Allow a dash between CamelCase token word parts, i.e. Camel-Case
+        # This allows for styles like Extra-Bold
+        token_regex = re.sub(r'(?<=[a-z])(?=[A-Z])', '-?', token_regex)
+        regex = re.compile('(.*?)(' + token_regex + ')(.*)', re.IGNORECASE)
         while j:
             j = regex.match(name)
             if not j:
@@ -169,6 +160,7 @@ class FontnameTools:
                 sys.exit('Malformed regex in FontnameTools.get_name_token()')
             not_matched += ' ' + j.groups()[0] # Blanc prevents unwanted concatenation of unmatched substrings
             tok = j.groups()[1].lower()
+            tok = tok.replace('-', '') # Remove dashes between CamelCase token words
             if tok in lower_tokens:
                 tok = tokens[lower_tokens.index(tok)]
             tok = FontnameTools.unify_style_names(tok)
@@ -238,6 +230,7 @@ class FontnameTools:
         'Medium': ('Md', 'Med'),
         'Nord': ('Nd', 'Nord'),
         'Book': ('Bk', 'Book'),
+        'Text': ('Txt', 'Text'),
         'Poster': ('Po', 'Poster'),
         'Demi': ('Dm', 'Demi'), # Demi is sometimes used as a weight, sometimes as a modifier
         'Regular': ('Rg', 'Reg'),
@@ -306,8 +299,9 @@ class FontnameTools:
 
     @staticmethod
     def _parse_simple_font_name(name):
-        """Parse a filename that does not follow the 'FontFamilyName-FontStyle' pattern"""
-        # No dash in name, maybe we have blanc separated filename?
+        """Parse a fontname that does not follow the 'FontFamilyName-FontStyle' pattern"""
+        # This is the usual case, because the font-patcher usually uses the fullname and
+        # not the PS name
         if ' ' in name:
             return FontnameTools.parse_font_name(name.replace(' ', '-'))
         # Do we have a number-name boundary?
@@ -322,8 +316,15 @@ class FontnameTools:
 
     @staticmethod
     def parse_font_name(name):
-        """Expects a filename following the 'FontFamilyName-FontStyle' pattern and returns ... parts"""
-        name = re.sub(r'\bsemi-condensed\b', 'SemiCondensed', name, 1, re.IGNORECASE) # Just for "3270 Semi-Condensed" :-/
+        """Expects a fontname following the 'FontFamilyName-FontStyle' pattern and returns ... parts"""
+        # This could parse filenames in the beginning but that was never used in production; code removed with this commit
+        for special in [
+                ('ExtLt', 'ExtraLight'), # IBM-Plex
+                ('Medm', 'Medium'), # IBM-Plex
+                ('Semi-Condensed', 'SemiCondensed'), # 3270
+                ('SmBld', 'SemiBold'), # IBM-Plex
+            ]:
+            name = re.sub(r'\b' + special[0] + r'\b', special[1], name, 1, re.IGNORECASE)
         name = re.sub('[_\s]+', ' ', name)
         matches = re.match(r'([^-]+)(?:-(.*))?', name)
         familyname = FontnameTools.camel_casify(matches.group(1))
@@ -345,7 +346,6 @@ class FontnameTools:
         # Some font specialities:
         other = [
             '-', 'Book', 'For', 'Powerline',
-            'Text',             # Plex
             'IIx',              # Profont IIx
             'LGC',              # Inconsolata LGC
             r'\bCE\b',          # ProggycleanTT CE
@@ -353,19 +353,9 @@ class FontnameTools:
             r'(?:uni-)?1[14]',  # GohuFont uni
         ]
 
-        # Sometimes used abbreviations
-        weight_abbrevs = [ 'ob', 'c', 'm', 'l', ]
-        style_abbrevs = [ 'it', 'r', 'b', 'i', ]
-
         ( style, weight_token ) = FontnameTools.get_name_token(style, weights)
         ( style, style_token ) = FontnameTools.get_name_token(style, styles)
-        ( style, other_token ) = FontnameTools.get_name_token(style, other, True)
-        if (len(style) < 4
-                and style.lower() != 'pro'): # Prevent 'r' of Pro to be detected as style_abbrev
-            ( style, weight_token_abbrevs ) = FontnameTools.get_name_token(style, weight_abbrevs)
-            ( style, style_token_abbrevs ) = FontnameTools.get_name_token(style, style_abbrevs)
-            weight_token += weight_token_abbrevs
-            style_token += style_token_abbrevs
+        ( style, other_token ) = FontnameTools.get_name_token(style, other)
         while 'Regular' in style_token and len(style_token) > 1:
             # Correct situation where "Regular" and something else is given
             style_token.remove('Regular')
