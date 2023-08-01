@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding=utf8
-# Nerd Fonts Version: 3.0.1
+# Nerd Fonts Version: 3.0.2
 # Script version is further down
 
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Change the script version when you edit this script:
-script_version = "4.4.0"
+script_version = "4.5.1"
 
-version = "3.0.1"
+version = "3.0.2"
 projectName = "Nerd Fonts"
 projectNameAbbreviation = "NF"
 projectNameSingular = projectName[:-1]
@@ -557,22 +557,35 @@ class font_patcher:
         additionalFontNameSuffix = " " + projectNameSingular + variant_full + additionalFontNameSuffix
 
         if FontnameParserOK and self.args.makegroups > 0:
-            use_fullname = isinstance(font.fullname, str) # Usually the fullname is better to parse
-            # Use fullname if it is 'equal' to the fontname
-            if font.fullname:
-                use_fullname |= font.fontname.lower() == FontnameTools.postscript_char_filter(font.fullname).lower()
-            # Use fullname for any of these source fonts (that are impossible to disentangle from the fontname, we need the blanks)
-            for hit in [ 'Meslo' ]:
-                use_fullname |= font.fontname.lower().startswith(hit.lower())
-            parser_name = font.fullname if use_fullname else font.fontname
-            # Gohu fontnames hide the weight, but the file names are ok...
-            if parser_name.startswith('Gohu'):
-                parser_name = os.path.splitext(os.path.basename(self.args.font))[0]
+            user_supplied_name = False # User supplied names are kept unchanged
+            if not isinstance(self.args.force_name, str):
+                use_fullname = isinstance(font.fullname, str) # Usually the fullname is better to parse
+                # Use fullname if it is 'equal' to the fontname
+                if font.fullname:
+                    use_fullname |= font.fontname.lower() == FontnameTools.postscript_char_filter(font.fullname).lower()
+                # Use fullname for any of these source fonts (that are impossible to disentangle from the fontname, we need the blanks)
+                for hit in [ 'Meslo' ]:
+                    use_fullname |= font.fontname.lower().startswith(hit.lower())
+                parser_name = font.fullname if use_fullname else font.fontname
+                # Gohu fontnames hide the weight, but the file names are ok...
+                if parser_name.startswith('Gohu'):
+                    parser_name = os.path.splitext(os.path.basename(self.args.font))[0]
+            else:
+                if self.args.force_name == 'full':
+                    parser_name = font.fullname
+                elif self.args.force_name == 'postscript':
+                    parser_name = font.fontname
+                else:
+                    parser_name = self.args.force_name
+                    user_supplied_name = True
+                if not isinstance(parser_name, str) or len(parser_name) < 1:
+                    logger.critical("Specified --name not usable because the name will be empty")
+                    sys.exit(2)
             n = FontnameParser(parser_name, logger)
             if not n.parse_ok:
                 logger.warning("Have only minimal naming information, check resulting name. Maybe specify --makegroups 0")
             n.drop_for_powerline()
-            n.enable_short_families(True, self.args.makegroups in [ 2, 3, 5, 6, ], self.args.makegroups in [ 3, 6, ])
+            n.enable_short_families(not user_supplied_name, self.args.makegroups in [ 2, 3, 5, 6, ], self.args.makegroups in [ 3, 6, ])
             if not n.set_expect_no_italic(self.args.noitalic):
                 logger.critical("Detected 'Italic' slant but --has-no-italic specified")
                 sys.exit(1)
@@ -675,6 +688,8 @@ class font_patcher:
             'fira sans'      : 'fura sans',
             'firamono'       : 'furamono',
             'firasans'       : 'furasans',
+            'IntelOneMono'   : 'IntoneMono',
+            'IntelOne Mono'  : 'Intone Mono',
         }
 
         # remove overly verbose font names
@@ -719,9 +734,11 @@ class font_patcher:
             font.appendSFNTName(str('English (US)'), str('Compatible Full'), font.fullname)
             font.appendSFNTName(str('English (US)'), str('SubFamily'), subFamily)
         else:
-            short_family = projectNameAbbreviation + variant_abbrev if self.args.makegroups >= 4 else projectNameSingular + variant_full
-            # inject_suffix(family, ps_fontname, short_family)
-            n.inject_suffix(verboseAdditionalFontNameSuffix, ps_suffix, short_family)
+            # Add Nerd Font suffix unless user specifically asked for some excplicit name via --name
+            if not user_supplied_name:
+                short_family = projectNameAbbreviation + variant_abbrev if self.args.makegroups >= 4 else projectNameSingular + variant_full
+                # inject_suffix(family, ps_fontname, short_family)
+                n.inject_suffix(verboseAdditionalFontNameSuffix, ps_suffix, short_family)
             n.rename_font(font)
 
         font.comment = projectInfo
@@ -1825,13 +1842,13 @@ def setup_arguments():
     parser.add_argument('-c', '--complete',                          dest='complete',         default=False, action='store_true', help='Add all available Glyphs')
     parser.add_argument('--careful',                                 dest='careful',          default=False, action='store_true', help='Do not overwrite existing glyphs if detected')
     parser.add_argument('--removeligs', '--removeligatures',         dest='removeligatures',  default=False, action='store_true', help='Removes ligatures specificed in JSON configuration file')
-    parser.add_argument('--postprocess',                             dest='postprocess',      default=False, type=str, nargs='?', help='Specify a Script for Post Processing')
-    parser.add_argument('--configfile',                              dest='configfile',       default=False, type=str, nargs='?', help='Specify a file path for JSON configuration file (see sample: src/config.sample.json)')
-    parser.add_argument('--custom',                                  dest='custom',           default=False, type=str, nargs='?', help='Specify a custom symbol font, all glyphs will be copied; absolute path suggested')
-    parser.add_argument('-ext', '--extension',                       dest='extension',        default="",    type=str, nargs='?', help='Change font file type to create (e.g., ttf, otf)')
-    parser.add_argument('-out', '--outputdir',                       dest='outputdir',        default=".",   type=str, nargs='?', help='The directory to output the patched font file to')
-    parser.add_argument('--glyphdir',                                dest='glyphdir',         default=__dir__ + "/src/glyphs/", type=str, nargs='?', help='Path to glyphs to be used for patching')
-    parser.add_argument('--makegroups',                              dest='makegroups',       default=1,     type=int, nargs='?', help='Use alternative method to name patched fonts (recommended)', const=1, choices=range(-1, 6 + 1))
+    parser.add_argument('--postprocess',                             dest='postprocess',      default=False, type=str,            help='Specify a Script for Post Processing')
+    parser.add_argument('--configfile',                              dest='configfile',       default=False, type=str,            help='Specify a file path for JSON configuration file (see sample: src/config.sample.json)')
+    parser.add_argument('--custom',                                  dest='custom',           default=False, type=str,            help='Specify a custom symbol font, all glyphs will be copied; absolute path suggested')
+    parser.add_argument('-ext', '--extension',                       dest='extension',        default="",    type=str,            help='Change font file type to create (e.g., ttf, otf)')
+    parser.add_argument('-out', '--outputdir',                       dest='outputdir',        default=".",   type=str,            help='The directory to output the patched font file to')
+    parser.add_argument('--glyphdir',                                dest='glyphdir',         default=__dir__ + "/src/glyphs/", type=str, help='Path to glyphs to be used for patching')
+    parser.add_argument('--makegroups',                              dest='makegroups',       default=1,     type=int, nargs='?', help='Use alternative method to name patched fonts (default=1)', const=1, choices=range(-1, 6 + 1))
     # --makegroup has an additional undocumented numeric specifier. '--makegroup' is in fact '--makegroup 1'.
     # Original font name: Hugo Sans Mono ExtraCondensed Light Italic
     #                                                              NF  Fam agg.
@@ -1860,6 +1877,7 @@ def setup_arguments():
     # <none>  - copy from sourcefont (default)
     # 0       - calculate from font according to OS/2-version-2
     # 500     - set to 500
+    parser.add_argument('--name',                                    dest='force_name',       default=None, type=str,             help='Specify naming source (\'full\', \'postscript\', or concrete free name-string)')
 
     # symbol fonts to include arguments
     sym_font_group = parser.add_argument_group('Symbol Fonts')
@@ -1913,22 +1931,22 @@ def setup_arguments():
         args.complete = font_complete
 
     if args.nonmono and args.single:
-        logging.warning("Specified contradicting --variable-width-glyphs and --use-single-width-glyph. Ignoring --variable-width-glyphs.")
+        logger.warning("Specified contradicting --variable-width-glyphs and --use-single-width-glyph. Ignoring --variable-width-glyphs.")
         args.nonmono = False
 
     make_sure_path_exists(args.outputdir)
     if not os.path.isfile(args.font):
-        logging.critical("Font file does not exist: %s", args.font)
+        logger.critical("Font file does not exist: %s", args.font)
         sys.exit(1)
     if not os.access(args.font, os.R_OK):
-        logging.critical("Can not open font file for reading: %s", args.font)
+        logger.critical("Can not open font file for reading: %s", args.font)
         sys.exit(1)
     is_ttc = len(fontforge.fontsInFile(args.font)) > 1
     try:
         source_font_test = TableHEADWriter(args.font)
         args.is_variable = source_font_test.find_table([b'avar', b'cvar', b'fvar', b'gvarb', b'HVAR', b'MVAR', b'VVAR'], 0)
         if args.is_variable:
-            logging.warning("Source font is a variable open type font (VF), opening might fail...")
+            logger.warning("Source font is a variable open type font (VF), opening might fail...")
     except:
         args.is_variable = False
     finally:
@@ -1943,25 +1961,30 @@ def setup_arguments():
         args.extension = '.' + args.extension
     if re.match("\.ttc$", args.extension, re.IGNORECASE):
         if not is_ttc:
-            logging.critical("Can not create True Type Collections from single font files")
+            logger.critical("Can not create True Type Collections from single font files")
             sys.exit(1)
     else:
         if is_ttc:
-            logging.critical("Can not create single font files from True Type Collections")
+            logger.critical("Can not create single font files from True Type Collections")
             sys.exit(1)
 
     if isinstance(args.xavgwidth, int) and not isinstance(args.xavgwidth, bool):
         if args.xavgwidth < 0:
-            logging.critical("--xavgcharwidth takes no negative numbers")
+            logger.critical("--xavgcharwidth takes no negative numbers")
             sys.exit(2)
         if args.xavgwidth > 16384:
-            logging.critical("--xavgcharwidth takes only numbers up to 16384")
+            logger.critical("--xavgcharwidth takes only numbers up to 16384")
             sys.exit(2)
 
     return args
 
-
 def main():
+    global logger
+    logger = logging.getLogger("start") # Use start logger until we can set up something sane
+    s_handler = logging.StreamHandler(stream=sys.stdout)
+    s_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    logger.addHandler(s_handler)
+
     global version
     git_version = check_version_with_git(version)
     allversions = "Patcher v{} ({}) (ff {})".format(
@@ -1972,7 +1995,6 @@ def main():
     check_fontforge_min_version()
     args = setup_arguments()
 
-    global logger
     logger = logging.getLogger(os.path.basename(args.font))
     logger.setLevel(logging.DEBUG)
     log_to_file = (args.debugmode & 1 == 1)
