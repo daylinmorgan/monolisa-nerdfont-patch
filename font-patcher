@@ -6,7 +6,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Change the script version when you edit this script:
-script_version = "4.5.1"
+script_version = "4.5.2"
 
 version = "3.0.2"
 projectName = "Nerd Fonts"
@@ -444,6 +444,9 @@ class font_patcher:
 
         # Adjust flags that can not be changed via fontforge
         if re.search('\\.[ot]tf$', self.args.font, re.IGNORECASE) and re.search('\\.[ot]tf$', outfile, re.IGNORECASE):
+            if not os.path.isfile(outfile) or os.path.getsize(outfile) < 1:
+                logger.critical("Something went wrong and Fontforge did not generate the new font - look for messages above")
+                sys.exit(1)
             try:
                 source_font = TableHEADWriter(self.args.font)
                 dest_font = TableHEADWriter(outfile)
@@ -1144,7 +1147,7 @@ class font_patcher:
         if our_btb == hhea_btb:
             metrics = Metric.TYPO if use_typo else Metric.WIN # conforming font
         elif abs(our_btb - hhea_btb) / our_btb < 0.03:
-            logger.info("Font vertical metrics slightly off (%.1f%)", (our_btb - hhea_btb) / our_btb * 100.0)
+            logger.info("Font vertical metrics slightly off (%.1f)", (our_btb - hhea_btb) / our_btb * 100.0)
             metrics = Metric.TYPO if use_typo else Metric.WIN
         else:
             # Try the other metric
