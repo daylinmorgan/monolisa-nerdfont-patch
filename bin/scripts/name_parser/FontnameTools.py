@@ -287,10 +287,11 @@ class FontnameTools:
     @staticmethod
     def weight_string_to_number(w):
         """ Convert a common string approximation to a PS/2 weight value """
-        if not len(w):
+        if not isinstance(w, str) or len(w) < 1:
             return 400
+        w = w.lower().replace('-', '').replace(' ', '')
         for num, strs in FontnameTools.equivalent_weights.items():
-            if w.lower() in strs:
+            if w in strs:
                 return num
         return None
 
