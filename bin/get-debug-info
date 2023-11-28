@@ -8,11 +8,18 @@ divider() {
 }
 show-version() {
 	printf "%s %s %s\n" "$(divider)" "$1" "$(divider)"
-	which "$1"
+	which "$1" 2>/dev/null
 	"$@"
+}
+
+show-dir() {
+  dir="$( dirname -- "$( readlink -f -- "$0"; )"; )"/../"$1"
+  printf "%s\n%s\n%s\n" "$(divider)" "$(tree "$dir")" "$(divider)"
 }
 
 show-version python --version
 show-version fontforge --version
 show-version docker --version
 show-version uname -a
+show-dir MonoLisa
+show-dir patched
