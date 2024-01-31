@@ -10,8 +10,6 @@ import time
 from pathlib import Path
 from typing import List, Set
 
-FONT_SRC = (Path(__file__).parent / "MonoLisa").absolute()
-
 
 class Color:
     def __init__(self):
@@ -133,16 +131,16 @@ def patch_single_font(
     font_path: Path, output_dir: Path, fp_args: str, verbose: bool
 ) -> None:
     # update display name to full resolved path
-    rel_path = font_path.absolute().relative_to(FONT_SRC)
-    output_path = (output_dir / rel_path).parent
+    rel_path = font_path.absolute()
+    output_path = (output_dir / rel_path.parent.name).absolute()
     output_path.mkdir(exist_ok=True, parents=True)
 
     cmd = [
         "fontforge",
         "-script",
-        "./font-patcher",
+        f"{Path(__file__).parent}/font-patcher",
         "--glyphdir",
-        "./src/glyphs/",
+        f"{Path(__file__).parent}/src/glyphs/",
         "-out",
         f"{output_path}",
         f"{font_path.absolute()}",
@@ -171,7 +169,9 @@ def collect_files_by_dir(fontfiles: List[Path]) -> Set[Path]:
 def patch_font_dir_docker(
     font_dir_path: Path, output_dir: Path, fp_args: str, verbose: bool
 ) -> None:
-    output_path = (output_dir / font_dir_path.relative_to(FONT_SRC)).absolute()
+    output_path = (
+        output_dir / font_dir_path.relative_to(font_dir_path.parent)
+    ).absolute()
     output_path.mkdir(exist_ok=True, parents=True)
 
     cmd = [
