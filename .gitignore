@@ -185,3 +185,4 @@ patched/*
 nerd-fonts
 .env
 font-patcher-log.txt
+result

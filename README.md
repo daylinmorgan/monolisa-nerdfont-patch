@@ -83,6 +83,14 @@ make update-fonts
 
 You can verify the fonts have been added with `make check`.
 
+## with Nix
+
+You can run using the included `flake.nix`.
+
+```bash
+nix run "github:daylinmorgan/monolisa-nerdfont-patch"
+```
+
 ## Contributing
 
 Before making changes to to any of the scripts in `bin` you should first install `pre-commit`.
