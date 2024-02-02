@@ -1,5 +1,5 @@
 {
-  description = "brain";
+  description = "A script to patch the MonoLisa font with Nerd Fonts glyphs.";
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
   outputs = inputs @ {
