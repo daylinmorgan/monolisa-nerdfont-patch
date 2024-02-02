@@ -1,10 +1,15 @@
 {
   description = "A script to patch the MonoLisa font with Nerd Fonts glyphs.";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    alejandra.url = "github:kamadorueda/alejandra";
+  };
 
   outputs = inputs @ {
     self,
     nixpkgs,
+    alejandra,
   }: let
     inherit (nixpkgs.lib) genAttrs;
     forAllSystems = f:
@@ -54,5 +59,7 @@
           };
         }
     );
+
+    formatter.x86_64-linux = alejandra.packages.x86_64-linux.default;
   };
 }
