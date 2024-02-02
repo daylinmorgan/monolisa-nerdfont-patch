@@ -3,22 +3,19 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default";
     alejandra.url = "github:kamadorueda/alejandra";
   };
 
-  outputs = inputs @ {
+  outputs = {
     self,
     nixpkgs,
+    systems,
     alejandra,
   }: let
     inherit (nixpkgs.lib) genAttrs;
     forAllSystems = f:
-      genAttrs [
-        "x86_64-linux"
-        "x86_64-darwin"
-        "aarch64-linux"
-        "aarch64-darwin"
-      ] (system: f nixpkgs.legacyPackages.${system});
+      genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
   in {
     packages = forAllSystems (pkgs:
       with pkgs; {
