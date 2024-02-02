@@ -20,33 +20,33 @@
       in
         fn system pkgs);
   in {
-    packages = eachSystem (_: pkgs:
-      with pkgs; {
-        default = stdenv.mkDerivation {
-          name = "monolisa-nerdfont-patch";
-          src = ./.;
-          nativeBuildInputs = [makeWrapper];
-          buildInputs = [fontforge python3];
-          unpackPhase = ":";
-          buildPhase = ":";
-          installPhase = ''
-            mkdir -p $out/bin
-            install -m755 -D ${./patch-monolisa} $out/bin/monolisa-nerdfont-patch
-            install -m755 -D ${./font-patcher} $out/bin/font-patcher
-            cp -r ${./bin} $out/bin/bin
-            cp -r ${./src} $out/bin/src
-          '';
-          postFixup = ''
-            wrapProgram $out/bin/monolisa-nerdfont-patch \
-              --set PATH ${lib.makeBinPath [fontforge]}
-          '';
-        };
-      });
+    packages = eachSystem (_: pkgs: {
+      default = pkgs.stdenv.mkDerivation {
+        name = "monolisa-nerdfont-patch";
+        src = ./.;
+        nativeBuildInputs = with pkgs; [makeWrapper];
+        buildInputs = with pkgs; [fontforge python3];
+        unpackPhase = ":";
+        buildPhase = ":";
+        installPhase = ''
+          mkdir -p $out/bin
+          install -m755 -D ${./patch-monolisa} $out/bin/monolisa-nerdfont-patch
+          install -m755 -D ${./font-patcher} $out/bin/font-patcher
+          cp -r ${./bin} $out/bin/bin
+          cp -r ${./src} $out/bin/src
+        '';
+        postFixup = ''
+          wrapProgram $out/bin/monolisa-nerdfont-patch \
+            --set PATH ${lib.makeBinPath (with pkgs; [fontforge])}
+        '';
+      };
+    });
 
-    devShells = eachSystem (_: pkgs:
-      with pkgs; {
-        default = mkShell {buildInputs = [fontforge python3 pre-commit];};
-      });
+    devShells = eachSystem (_: pkgs: {
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [fontforge python3 pre-commit];
+      };
+    });
 
     formatter = eachSystem (system: _: alejandra.packages.${system}.default);
   };
