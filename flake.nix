@@ -14,10 +14,13 @@
     alejandra,
   }: let
     inherit (nixpkgs.lib) genAttrs;
-    forAllSystems = f:
-      genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
+    eachSystem = fn:
+      genAttrs (import systems) (system: let
+        pkgs = import nixpkgs {localSystem.system = system;};
+      in
+        fn system pkgs);
   in {
-    packages = forAllSystems (pkgs:
+    packages = eachSystem (_: pkgs:
       with pkgs; {
         default = stdenv.mkDerivation {
           name = "monolisa-nerdfont-patch";
@@ -40,11 +43,11 @@
         };
       });
 
-    devShells = forAllSystems (pkgs:
+    devShells = eachSystem (_: pkgs:
       with pkgs; {
         default = mkShell {buildInputs = [fontforge python3 pre-commit];};
       });
 
-    formatter.x86_64-linux = alejandra.packages.x86_64-linux.default;
+    formatter = eachSystem (system: _: alejandra.packages.${system}.default);
   };
 }
