@@ -13,9 +13,9 @@
     systems,
     alejandra,
   }: let
-    inherit (nixpkgs.lib) genAttrs;
+    inherit (nixpkgs) lib;
     eachSystem = fn:
-      genAttrs (import systems) (system: let
+      lib.genAttrs (import systems) (system: let
         pkgs = import nixpkgs {localSystem.system = system;};
       in
         fn system pkgs);
