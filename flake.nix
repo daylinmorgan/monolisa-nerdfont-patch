@@ -30,7 +30,6 @@
           src = ./.;
           nativeBuildInputs = with final; [makeWrapper];
           buildInputs = with final; [fontforge python3];
-          unpackPhase = ":";
           buildPhase = ":";
           installPhase = ''
             mkdir -p $out/bin
