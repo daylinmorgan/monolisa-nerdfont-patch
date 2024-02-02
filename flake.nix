@@ -16,30 +16,40 @@
     inherit (nixpkgs) lib;
     eachSystem = fn:
       lib.genAttrs (import systems) (system: let
-        pkgs = import nixpkgs {localSystem.system = system;};
+        pkgs = import nixpkgs {
+          localSystem.system = system;
+          overlays = [self.overlays.default];
+        };
       in
         fn system pkgs);
   in {
-    packages = eachSystem (_: pkgs: {
-      default = pkgs.stdenv.mkDerivation {
-        name = "monolisa-nerdfont-patch";
-        src = ./.;
-        nativeBuildInputs = with pkgs; [makeWrapper];
-        buildInputs = with pkgs; [fontforge python3];
-        unpackPhase = ":";
-        buildPhase = ":";
-        installPhase = ''
-          mkdir -p $out/bin
-          install -m755 -D ${./patch-monolisa} $out/bin/monolisa-nerdfont-patch
-          install -m755 -D ${./font-patcher} $out/bin/font-patcher
-          cp -r ${./bin} $out/bin/bin
-          cp -r ${./src} $out/bin/src
-        '';
-        postFixup = ''
-          wrapProgram $out/bin/monolisa-nerdfont-patch \
-            --set PATH ${lib.makeBinPath (with pkgs; [fontforge])}
-        '';
+    overlays = {
+      default = final: prev: {
+        monolisa-nerdfont-patch = final.stdenv.mkDerivation {
+          name = "monolisa-nerdfont-patch";
+          src = ./.;
+          nativeBuildInputs = with final; [makeWrapper];
+          buildInputs = with final; [fontforge python3];
+          unpackPhase = ":";
+          buildPhase = ":";
+          installPhase = ''
+            mkdir -p $out/bin
+            install -m755 -D ${./patch-monolisa} $out/bin/monolisa-nerdfont-patch
+            install -m755 -D ${./font-patcher} $out/bin/font-patcher
+            cp -r ${./bin} $out/bin/bin
+            cp -r ${./src} $out/bin/src
+          '';
+          postFixup = ''
+            wrapProgram $out/bin/monolisa-nerdfont-patch \
+              --set PATH ${lib.makeBinPath (with final; [fontforge])}
+          '';
+        };
       };
+    };
+
+    packages = eachSystem (system: pkgs: {
+      default = self.packages.${system}.monolisa-nerdfont-patch;
+      monolisa-nerdfont-patch = pkgs.monolisa-nerdfont-patch;
     });
 
     devShells = eachSystem (_: pkgs: {
