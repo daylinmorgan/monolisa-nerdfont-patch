@@ -4,14 +4,12 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
-    alejandra.url = "github:kamadorueda/alejandra";
   };
 
   outputs = {
     self,
     nixpkgs,
     systems,
-    alejandra,
   }: let
     inherit (nixpkgs) lib;
     eachSystem = fn:
@@ -56,7 +54,5 @@
         packages = with pkgs; [fontforge python3 pre-commit];
       };
     });
-
-    formatter = eachSystem (system: _: alejandra.packages.${system}.default);
   };
 }
