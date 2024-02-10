@@ -13,21 +13,23 @@
   }: let
     inherit (nixpkgs.lib) genAttrs makeBinPath;
     eachSystem = fn:
-      lib.genAttrs (import systems) (system: let
-        pkgs = import nixpkgs {
+      genAttrs (import systems)
+      (system:
+        fn system
+        (import nixpkgs {
           localSystem.system = system;
           overlays = [self.overlays.default];
-        };
-      in
-        fn system pkgs);
+        }));
   in {
     overlays = {
-      default = final: prev: {
-        monolisa-nerdfont-patch = final.stdenv.mkDerivation {
+      default = final: _prev: let
+        pkgs = final;
+      in {
+        monolisa-nerdfont-patch = pkgs.stdenv.mkDerivation {
           name = "monolisa-nerdfont-patch";
           src = ./.;
-          nativeBuildInputs = with final; [makeWrapper];
-          buildInputs = with final; [fontforge python3];
+          nativeBuildInputs = with pkgs; [makeWrapper];
+          buildInputs = with pkgs; [fontforge python3];
           buildPhase = ":";
           installPhase = ''
             mkdir -p $out/bin
