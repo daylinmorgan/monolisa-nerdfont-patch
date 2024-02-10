@@ -106,7 +106,7 @@ def run_cmd(
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="patch-monolisa")
     parser.add_argument(
         "-f",
         "--font-path",
