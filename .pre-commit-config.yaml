@@ -12,3 +12,8 @@ repos:
       - id: ruff-format
       - id: ruff
         args: [ --fix ]
+  - repo: https://github.com/kamadorueda/alejandra
+    rev: 3.0.0
+    hooks:
+       # Requires Alejandra to be previously installed in the system
+      - id: alejandra-system
