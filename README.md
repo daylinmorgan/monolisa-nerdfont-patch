@@ -2,7 +2,7 @@
 
 _Most_ Batteries included repo to patch MonoLisa with Nerd Fonts glyphs
 
-tested w/ MonoLisa v2.003
+tested w/ MonoLisa-Basic-2.012
 
 <p align="center">
 <img src="./assets/help.svg" width=400>
