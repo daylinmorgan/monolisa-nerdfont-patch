@@ -53,7 +53,7 @@
 
     devShells = eachSystem (_: pkgs: {
       default = pkgs.mkShell {
-        buildInputs = with pkgs; [fontforge python3 pre-commit];
+        packages = with pkgs; [fontforge python3 pre-commit];
       };
     });
 
