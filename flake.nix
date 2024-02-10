@@ -11,7 +11,7 @@
     nixpkgs,
     systems,
   }: let
-    inherit (nixpkgs) lib;
+    inherit (nixpkgs.lib) genAttrs makeBinPath;
     eachSystem = fn:
       lib.genAttrs (import systems) (system: let
         pkgs = import nixpkgs {
@@ -38,7 +38,7 @@
           '';
           postFixup = ''
             wrapProgram $out/bin/monolisa-nerdfont-patch \
-              --set PATH ${lib.makeBinPath (with final; [fontforge])}
+              --set PATH ${makeBinPath (with final; [fontforge])}
           '';
         };
       };
