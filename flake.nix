@@ -17,7 +17,7 @@
       (system:
         fn system
         (import nixpkgs {
-          localSystem.system = system;
+          inherit system;
           overlays = [self.overlays.default];
         }));
   in {
