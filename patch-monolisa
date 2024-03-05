@@ -91,7 +91,7 @@ def run_cmd(
         command,
         stdout=None if verbose else subprocess.PIPE,
         stderr=None if verbose else subprocess.STDOUT,
-        universal_newlines=True,
+        encoding="utf-8",
     )
 
     if p.returncode != 0 and not ignore_error:
