@@ -91,7 +91,7 @@ def run_cmd(
         command,
         stdout=None if verbose else subprocess.PIPE,
         stderr=None if verbose else subprocess.STDOUT,
-        encoding="utf-8",
+        errors="replace",  # different encoding should hopefully just result in bad UI but working fonts
     )
 
     if p.returncode != 0 and not ignore_error:
