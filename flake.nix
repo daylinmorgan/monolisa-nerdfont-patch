@@ -13,10 +13,8 @@
   }: let
     inherit (nixpkgs.lib) genAttrs makeBinPath;
     eachSystem = fn:
-      genAttrs (import systems)
-      (system:
-        fn system
-        (import nixpkgs {
+      genAttrs (import systems) (system:
+        fn system (import nixpkgs {
           inherit system;
           overlays = [self.overlays.default];
         }));
@@ -33,14 +31,15 @@
           buildPhase = ":";
           installPhase = ''
             mkdir -p $out/bin
-            install -m755 -D ${./patch-monolisa} $out/bin/monolisa-nerdfont-patch
+            install -m755 -D ${./patch-monolisa} \
+              $out/bin/monolisa-nerdfont-patch
             install -m755 -D ${./font-patcher} $out/bin/font-patcher
             cp -r ${./bin} $out/bin/bin
             cp -r ${./src} $out/bin/src
           '';
           postFixup = ''
             wrapProgram $out/bin/monolisa-nerdfont-patch \
-              --set PATH ${makeBinPath (with final; [fontforge])}
+              --set PATH ${makeBinPath (with pkgs; [fontforge])}
           '';
         };
       };
@@ -53,8 +52,10 @@
 
     devShells = eachSystem (_: pkgs: {
       default = pkgs.mkShell {
-        buildInputs = with pkgs; [fontforge python3 pre-commit];
+        packages = with pkgs; [fontforge python3 pre-commit];
       };
     });
+
+    formatter = eachSystem (_: pkgs: pkgs.nixfmt);
   };
 }
