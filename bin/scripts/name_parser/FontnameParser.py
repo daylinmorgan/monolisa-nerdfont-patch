@@ -153,7 +153,7 @@ class FontnameParser:
             keep_regular = self.keep_regular_in_family
         if ('Regular' in styles
                 and (not keep_regular
-                    or len(self.weight_token) > 0)): # This is actually a malformed font name
+                    or FontnameTools.check_contains_weight(self.weight_token))): # This is actually a malformed font name
             styles = list(self.style_token)
             styles.remove('Regular')
         # For naming purposes we want Oblique to be part of the styles
@@ -309,12 +309,12 @@ class FontnameParser:
             os2_weight, ps_weight, name_weight,
             font.os2_weight, font.weight, weight))
 
-    def pfam_to_sfnt(self, name_function, entry, message):
+    def pfam_to_sfnt(self, name_function, entry, message, maxnum = 2):
         """Prepare SFNT entries for short and long form as two different languages"""
         languages = [ 'English (US)', 'English (British)' ]
         names = [ name_function(False), name_function(True) ]
         ret = [ ]
-        for i in range(2):
+        for i in range(maxnum):
             if len(names[i]):
                 ret += [( languages[i], entry, self.checklen(31, message, names[i]) )]
             else:
@@ -374,8 +374,9 @@ class FontnameParser:
         sfnt_list += [( 'English (US)', 'UniqueID', self.fullname() + version_tag )] # 3
         sfnt_list += [( 'English (US)', 'Fullname', self.checklen(63, 'Fullname (ID 4)', self.fullname()) )] # 4
         sfnt_list += [( 'English (US)', 'PostScriptName', self.checklen(63, 'PSN (ID 6)', self.psname()) )] # 6
-        sfnt_list += self.pfam_to_sfnt(self.preferred_family, 'Preferred Family', 'PrefFamily (ID 16)') # 16
-        sfnt_list += self.pfam_to_sfnt(self.preferred_styles, 'Preferred Styles', 'PrefStyles (ID 17)') # 17
+        sfnt_plus  = self.pfam_to_sfnt(self.preferred_family, 'Preferred Family', 'PrefFamily (ID 16)') # 16
+        sfnt_plus += self.pfam_to_sfnt(self.preferred_styles, 'Preferred Styles', 'PrefStyles (ID 17)', len(sfnt_plus)) # 17
+        sfnt_list += sfnt_plus
 
         font.sfnt_names = tuple(sfnt_list)
 

@@ -203,7 +203,7 @@ class FontnameTools:
         # Noone cares that font names starting with a digit are forbidden:
         ( 'IBM 3270',                   r'3270'), # for historical reasons and 'IBM' is a TM or something
         # Some name parts that are too long for us
-        ( '(.*sans ?m)ono',             r'\1'), # Various SomenameSansMono fonts
+        ( '^(?!ubuntu)(.*sans ?m)ono',  r'\1'), # Various SomenameSansMono fonts
         ( '(.*code ?lat)in',            r'\1'), # for 'M PLUS Code Latin'
         ( '(b)ig( ?)(b)lue( ?)(t)erminal', r'\1ig\3lue\5erm'), # Shorten BigBlueTerminal
         ( '(.*)437TT',                  r'\g<1>437'), # Shorten BigBlueTerminal 437 TT even further
@@ -219,7 +219,7 @@ class FontnameTools:
         ( '(.*r)adon',                  r'\1n'), # Monaspace shorten face name
         ( '(im ?writing ?q)uattro',     r'\1uat'), # Rename iM Writing Quattro to Quat
         ( '(im ?writing ?(mono|duo|quat)) ?s', r'\1'), # Remove S from all iM Writing styles
-        ( '(r)ec( ?)(m)ono( ?)(s)emicasual', r'\1ec\3ono\5emi'), # Shorten RecMonoSemicausal
+        ( '(r)ec( ?)(m)ono( ?)(s)emicasual', r'\1ec\3ono\5mCasual'), # Shorten RecMonoSemicausal
     ]
 
     # From https://adobe-type-tools.github.io/font-tech-notes/pdfs/5088.FontNames.pdf
@@ -250,8 +250,8 @@ class FontnameTools:
         'Bold': ('Bd', 'Bold'),
         'Heavy': ('Hv', 'Heavy'),
         'Thin': ('Th', 'Thin'),
+        'Thick': ('Tk', 'Thck'),
         'Light': ('Lt', 'Light'),
-        ' ': (), # Just for CodeClimate :-/
     }
     known_styles = [ # Keywords that end up as style (i.e. a RIBBI set)
         'Bold', 'Italic', 'Regular', 'Normal'
@@ -289,6 +289,23 @@ class FontnameTools:
         800: ('extrabold', 'ultrabold'),
         900: ('black', 'heavy', 'poster', 'extrablack', 'ultrablack'),
     }
+
+    @staticmethod
+    def weight_permutations():
+        """ All the weight modifiers we know """
+        return [ m + s
+                for s in list(FontnameTools.known_weights2)
+                for m in list(FontnameTools.known_modifiers) + [''] if m != s
+            ] + list(FontnameTools.known_weights1)
+
+    @staticmethod
+    def check_contains_weight(token):
+        """ Check if a token set contains a Weight specifier or just Widths or Slopes """
+        weights = FontnameTools.weight_permutations()
+        for t in token:
+            if t in weights:
+                return True
+        return False
 
     @staticmethod
     def weight_string_to_number(w):
@@ -379,6 +396,7 @@ class FontnameTools:
                 ('Medm', 'Medium'), # IBM-Plex
                 ('Semi-Condensed', 'SemiCondensed'), # 3270
                 ('SmBld', 'SemiBold'), # IBM-Plex
+                ('Bold-Italic', 'BoldItalic'), # Terminus
             ]:
             name = re.sub(r'\b' + special[0] + r'\b', special[1], name, 1, re.IGNORECASE)
         name = re.sub('[_\s]+', ' ', name)
@@ -393,10 +411,11 @@ class FontnameTools:
         # Weights end up as Typographic Family parts ('after the dash')
         # Styles end up as Family parts (for classic grouping of four)
         # Others also end up in Typographic Family ('before the dash')
-        weights = [ m + s
-                for s in list(FontnameTools.known_weights2) + list(FontnameTools.known_widths)
-                for m in list(FontnameTools.known_modifiers) + [''] if m != s
-            ] + list(FontnameTools.known_weights1) + list(FontnameTools.known_slopes)
+        widths = [ m + s
+                for s in list(FontnameTools.known_widths)
+                for m in list(FontnameTools.known_modifiers) + ['']
+            ]
+        weights = FontnameTools.weight_permutations() + list(FontnameTools.known_slopes)
         weights = [ w for w in weights if w not in FontnameTools.known_styles ]
         # Some font specialities:
         other = [
@@ -408,9 +427,11 @@ class FontnameTools:
             r'(?:uni-)?1[14]',  # GohuFont uni
         ]
 
+        ( style, width_token ) = FontnameTools.get_name_token(style, widths)
         ( style, weight_token ) = FontnameTools.get_name_token(style, weights)
         ( style, style_token ) = FontnameTools.get_name_token(style, FontnameTools.known_styles)
         ( style, other_token ) = FontnameTools.get_name_token(style, other)
+        weight_token = width_token + weight_token
         while 'Regular' in style_token and len(style_token) > 1:
             # Correct situation where "Regular" and something else is given
             style_token.remove('Regular')
