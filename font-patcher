@@ -6,7 +6,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Change the script version when you edit this script:
-script_version = "4.18.1"
+script_version = "4.18.2"
 
 version = "3.3.0"
 projectName = "Nerd Fonts"
@@ -1266,7 +1266,7 @@ class font_patcher:
             logger.debug("Metrics is strange")
             pass # Will fail the metrics check some line later
 
-        if self.args.cellopt:
+        if isinstance(self.args.cellopt, list):
             logger.debug("Overriding cell Y{%d:%d} with Y{%d:%d}",
                 self.font_dim['ymin'], self.font_dim['ymax'],
                 self.args.cellopt[2], self.args.cellopt[3])
@@ -1363,14 +1363,23 @@ class font_patcher:
             self.font_dim['xmin'] = self.args.cellopt[0]
             self.font_dim['xmax'] = self.args.cellopt[1]
             self.font_dim['width'] = self.args.cellopt[1]
-        logger.debug("Final font cell dimensions %d w x %d h%s",
-            self.font_dim['width'], self.font_dim['height'],
-            ' (with icon cell {} h)'.format(int(self.font_dim['iconheight'])) if self.font_dim['iconheight'] != self.font_dim['height'] else '')
         if self.args.cellopt:
-            logger.info("Cell coordinates %s%d:%d:%d:%d",
+            logger.info("Cell coordinates (Xmin:Xmax:Ymin:Ymax) %s%d:%d:%d:%d",
                 '' if not isinstance(self.args.cellopt, list) else 'overridden with ',
                 self.font_dim['xmin'], self.font_dim['width'],
                 self.font_dim['ymax'] - self.font_dim['height'], self.font_dim['ymax'])
+        logger.debug("Final font cell dimensions %d w x %d h%s",
+            self.font_dim['width'], self.font_dim['height'],
+            ' (with icon cell {} h)'.format(int(self.font_dim['iconheight'])) if self.font_dim['iconheight'] != self.font_dim['height'] else '')
+        try:
+            x_bb = self.sourceFont['x'].boundingBox();
+            X_bb = self.sourceFont['X'].boundingBox();
+            logger.debug("Center x-height/cell/capitals %d/%d/%d",
+                (x_bb[3] - x_bb[1]) / 2 + x_bb[1],
+                (self.font_dim['ymax'] - self.font_dim['ymin']) / 2 + self.font_dim['ymin'],
+                (X_bb[3] - X_bb[1]) / 2 + X_bb[1])
+        except:
+            pass
 
         self.xavgwidth.append(self.args.xavgwidth)
         if isinstance(self.xavgwidth[-1], int) and self.xavgwidth[-1] == 0:
@@ -2039,7 +2048,7 @@ def setup_arguments():
     expert_group = parser.add_argument_group('Expert Options')
     expert_group.add_argument('--adjust-line-height', '-l',                dest='adjustLineHeight', default=False, action='store_true', help='Whether to adjust line heights (attempt to center powerline separators more evenly)')
     expert_group.add_argument('--boxdrawing',                              dest='forcebox',         default=False, action='store_true', help='Force patching in (over existing) box drawing glyphs')
-    expert_group.add_argument('--cell',                                    dest='cellopt',          default=None,  type=str,            help='Adjust or query the call size, e.g. use "0:1000:-200:800" resp "?"')
+    expert_group.add_argument('--cell',                                    dest='cellopt',          default=None,  type=str,            help='Adjust or query the cell size, e.g. use "0:1000:-200:800" or "?"')
     expert_group.add_argument('--configfile',                              dest='configfile',       default=False, type=str,            help='Specify a file path for configuration file (see sample: src/config.sample.cfg)')
     expert_group.add_argument('--custom',                                  dest='custom',           default=False, type=str,            help='Specify a custom symbol font, all glyphs will be copied; absolute path suggested')
     expert_group.add_argument('--dry',                                     dest='dry_run',          default=False, action='store_true', help='Do neither patch nor store the font, to check naming')
