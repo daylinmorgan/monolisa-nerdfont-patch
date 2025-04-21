@@ -185,6 +185,7 @@ class FontnameTools:
     SIL_TABLE = [
         ( '(a)nka/(c)oder',             r'\1na\2onder' ),
         ( '(a)nonymous',                r'\1nonymice' ),
+        ( '(a)tkinson ?hyperlegible', r'\1tkynson' ), # Atkinson Hyperlegible -> Atkynson
         ( '(b)itstream( ?)(v)era( ?sans ?mono)?', r'\1itstrom\2Wera' ),
         ( '(c)ascadia( ?)(c)ode',       r'\1askaydia\2\3ove' ),
         ( '(c)ascadia( ?)(m)ono',       r'\1askaydia\2\3ono' ),

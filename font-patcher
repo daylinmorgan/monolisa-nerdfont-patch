@@ -1372,12 +1372,13 @@ class font_patcher:
             self.font_dim['width'], self.font_dim['height'],
             ' (with icon cell {} h)'.format(int(self.font_dim['iconheight'])) if self.font_dim['iconheight'] != self.font_dim['height'] else '')
         try:
+            middle = lambda x, y: abs(x - y) / 2 + min(x, y)
             x_bb = self.sourceFont['x'].boundingBox();
             X_bb = self.sourceFont['X'].boundingBox();
             logger.debug("Center x-height/cell/capitals %d/%d/%d",
-                (x_bb[3] - x_bb[1]) / 2 + x_bb[1],
-                (self.font_dim['ymax'] - self.font_dim['ymin']) / 2 + self.font_dim['ymin'],
-                (X_bb[3] - X_bb[1]) / 2 + X_bb[1])
+                middle(x_bb[1], x_bb[3]),
+                middle(self.font_dim['ymin'], self.font_dim['ymax']),
+                middle(X_bb[1], X_bb[3]))
         except:
             pass
 
