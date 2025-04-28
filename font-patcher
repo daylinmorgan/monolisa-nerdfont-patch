@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding=utf8
-# Nerd Fonts Version: 3.3.0
+# Nerd Fonts Version: 3.4.0
 # Script version is further down
 
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Change the script version when you edit this script:
-script_version = "4.18.2"
+script_version = "4.20.3"
 
-version = "3.3.0"
+version = "3.4.0"
 projectName = "Nerd Fonts"
 projectNameAbbreviation = "NF"
 projectNameSingular = projectName[:-1]
@@ -1070,25 +1070,24 @@ class font_patcher:
             range(0xf221, 0xf22d + 1), # gender or so
             range(0xf255, 0xf25b + 1), # hand symbols
         ]}
-        HEAVY_SCALE_LIST = {'ShiftMode': 'y', 'ScaleGlyph': 0x2771, # widest bracket, horizontally
-            'GlyphsToScale': [
-                (0x276c, 0x2771) # all
+        HEAVY_SCALE_LIST = {'ShiftMode': 'xy', 'ScaleGroups': [
+            range(0x276c, 0x2771+1)
         ]}
         OCTI_SCALE_LIST = {'ShiftMode': '', 'ScaleGroups': [
-                [*range(0xf03d, 0xf040 + 1), 0xf019, 0xf030, 0xf04a, 0xf051,  0xf071, 0xf08c ], # arrows
-                [0xF0E7, # Smily and ...
-                    0xf044, 0xf05a, 0xf05b, 0xf0aa, # triangles
-                    0xf052, 0xf053, 0xf296, 0xf2f0, # small stuff
-                    0xf078, 0xf0a2, 0xf0a3, 0xf0a4, # chevrons
-                    0xf0ca, 0xf081, 0xf092, # dash, X, github-text
-                ],
-                [0xf09c, 0xf09f, 0xf0de], # bells
-                range(0xf2c2, 0xf2c5 + 1), # move to
-                [0xf07b, 0xf0a1, 0xf0d6, 0xf306], # bookmarks
+            [*range(0xf03d, 0xf040 + 1), 0xf019, 0xf030, 0xf04a, 0xf051,  0xf071, 0xf08c ], # arrows
+            [0xF0E7, # Smily and ...
+                0xf044, 0xf05a, 0xf05b, 0xf0aa, # triangles
+                0xf052, 0xf053, 0xf296, 0xf2f0, # small stuff
+                0xf078, 0xf0a2, 0xf0a3, 0xf0a4, # chevrons
+                0xf0ca, 0xf081, 0xf092, # dash, X, github-text
+            ],
+            [0xf09c, 0xf09f, 0xf0de], # bells
+            range(0xf2c2, 0xf2c5 + 1), # move to
+            [0xf07b, 0xf0a1, 0xf0d6, 0xf306], # bookmarks
         ]}
         PROGR_SCALE_LIST = {'ShiftMode': 'xy', 'ScaleGroups': [
-                range(0xedff, 0xee05 + 1), # boxes... with helper glyph for Y padding
-                range(0xee06, 0xee0b + 1), # circles
+            range(0xedff, 0xee05 + 1), # boxes... with helper glyph EDFF for Y padding
+            range(0xee06, 0xee0b + 1), # circles
         ]}
         WEATH_SCALE_LIST = {'ShiftMode': '', 'ScaleGroups': [
             [0xf03c, 0xf042, 0xf045 ], # degree signs
@@ -1125,7 +1124,7 @@ class font_patcher:
             {'Enabled': True,                           'Name': "Heavy Angle Brackets",    'Filename': "extraglyphs.sfd",                                'Exact': True,  'SymStart': 0x276C, 'SymEnd': 0x2771, 'SrcStart': None,   'ScaleRules': HEAVY_SCALE_LIST, 'Attributes': SYM_ATTR_HEAVYBRACKETS},
             {'Enabled': box_enabled,                    'Name': "Box Drawing",             'Filename': "extraglyphs.sfd",                                'Exact': True,  'SymStart': 0x2500, 'SymEnd': 0x259F, 'SrcStart': None,   'ScaleRules': BOX_SCALE_LIST,   'Attributes': SYM_ATTR_BOX},
             {'Enabled': True,                           'Name': "Progress Indicators",     'Filename': "extraglyphs.sfd",                                'Exact': True,  'SymStart': 0xEE00, 'SymEnd': 0xEE0B, 'SrcStart': None,   'ScaleRules': PROGR_SCALE_LIST, 'Attributes': SYM_ATTR_PROGRESS},
-            {'Enabled': True,                           'Name': "Devicons",                'Filename': "devicons/devicons.ttf",                          'Exact': False, 'SymStart': 0xE600, 'SymEnd': 0xE7EF, 'SrcStart': 0xE700, 'ScaleRules': DEVI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},
+            {'Enabled': True,                           'Name': "Devicons",                'Filename': "devicons/devicons.otf",                          'Exact': False, 'SymStart': 0xE600, 'SymEnd': 0xE7EF, 'SrcStart': 0xE700, 'ScaleRules': DEVI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},
             {'Enabled': self.args.powerline,            'Name': "Powerline Symbols",       'Filename': "powerline-symbols/PowerlineSymbols.otf",         'Exact': True,  'SymStart': 0xE0A0, 'SymEnd': 0xE0A2, 'SrcStart': None,   'ScaleRules': None,             'Attributes': SYM_ATTR_POWERLINE},
             {'Enabled': self.args.powerline,            'Name': "Powerline Symbols",       'Filename': "powerline-symbols/PowerlineSymbols.otf",         'Exact': True,  'SymStart': 0xE0B0, 'SymEnd': 0xE0B3, 'SrcStart': None,   'ScaleRules': None,             'Attributes': SYM_ATTR_POWERLINE},
             {'Enabled': self.args.powerlineextra,       'Name': "Powerline Extra Symbols", 'Filename': "powerline-extra/PowerlineExtraSymbols.otf",      'Exact': True,  'SymStart': 0xE0A3, 'SymEnd': 0xE0A3, 'SrcStart': None,   'ScaleRules': None,             'Attributes': SYM_ATTR_POWERLINE},
@@ -1142,10 +1141,10 @@ class font_patcher:
             {'Enabled': self.args.material,             'Name': "Material",                'Filename': "materialdesign/MaterialDesignIconsDesktop.ttf",  'Exact': True,  'SymStart': 0xF0001,'SymEnd': 0xF1AF0,'SrcStart': None,   'ScaleRules': MDI_SCALE_LIST,   'Attributes': SYM_ATTR_DEFAULT},
             {'Enabled': self.args.weather,              'Name': "Weather Icons",           'Filename': "weather-icons/weathericons-regular-webfont.ttf", 'Exact': False, 'SymStart': 0xF000, 'SymEnd': 0xF0EB, 'SrcStart': 0xE300, 'ScaleRules': WEATH_SCALE_LIST, 'Attributes': SYM_ATTR_DEFAULT},
             {'Enabled': self.args.fontlogos,            'Name': "Font Logos",              'Filename': "font-logos.ttf",                                 'Exact': True,  'SymStart': 0xF300, 'SymEnd': 0xF381, 'SrcStart': None,   'ScaleRules': None,             'Attributes': SYM_ATTR_DEFAULT},
-            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.ttf",                          'Exact': False, 'SymStart': 0xF000, 'SymEnd': 0xF105, 'SrcStart': 0xF400, 'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},  # Magnifying glass
-            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.ttf",                          'Exact': True,  'SymStart': 0x2665, 'SymEnd': 0x2665, 'SrcStart': None,   'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},  # Heart
-            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.ttf",                          'Exact': True,  'SymStart': 0X26A1, 'SymEnd': 0X26A1, 'SrcStart': None,   'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},  # Zap
-            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.ttf",                          'Exact': False, 'SymStart': 0xF27C, 'SymEnd': 0xF306, 'SrcStart': 0xF4A9, 'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},
+            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.otf",                          'Exact': False, 'SymStart': 0xF000, 'SymEnd': 0xF105, 'SrcStart': 0xF400, 'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},  # Magnifying glass
+            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.otf",                          'Exact': True,  'SymStart': 0x2665, 'SymEnd': 0x2665, 'SrcStart': None,   'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},  # Heart
+            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.otf",                          'Exact': True,  'SymStart': 0X26A1, 'SymEnd': 0X26A1, 'SrcStart': None,   'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},  # Zap
+            {'Enabled': self.args.octicons,             'Name': "Octicons",                'Filename': "octicons/octicons.otf",                          'Exact': False, 'SymStart': 0xF27C, 'SymEnd': 0xF306, 'SrcStart': 0xF4A9, 'ScaleRules': OCTI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},
             {'Enabled': self.args.codicons,             'Name': "Codicons",                'Filename': "codicons/codicon.ttf",                           'Exact': True,  'SymStart': 0xEA60, 'SymEnd': 0xEC1E, 'SrcStart': None,   'ScaleRules': CODI_SCALE_LIST,  'Attributes': SYM_ATTR_DEFAULT},
             {'Enabled': self.args.custom,               'Name': "Custom",                  'Filename': self.args.custom,                                 'Exact': True,  'SymStart': 0x0000, 'SymEnd': 0x0000, 'SrcStart': None,   'ScaleRules': None,             'Attributes': CUSTOM_ATTR}
         ]
@@ -1586,7 +1585,25 @@ class font_patcher:
                     scale_ratio_x = scale_ratio_x * xy_ratio_max / xy_ratio
 
             if scale_ratio_x != 1.0 or scale_ratio_y != 1.0:
+                scale_ratio_x *= self.sourceFont.em / (self.sourceFont.em + 1) # scale a tiny bit too small to avoid rounding problems
                 self.sourceFont[currentSourceFontGlyph].transform(psMat.scale(scale_ratio_x, scale_ratio_y))
+
+            # Drop nonintegral part of nodes' coordinates; ttf will do it anyhow, otf will be much smaller
+            self.sourceFont[currentSourceFontGlyph].round()
+
+            if self.args.single:
+                # Check and correct the scaling after rounding (if all 3 tries fail we will get a warning later on)
+                destmaxsize = self.font_dim['width'] * max(1, 1 + (overlap or 0))
+                for increaser in range(3):
+                    (xmin, _, xmax, _) = self.sourceFont[currentSourceFontGlyph].boundingBox()
+                    sizeerror = (xmax - xmin) - destmaxsize
+                    if sizeerror <= 0:
+                        break
+                    # Start from scratch with a new unscaled glyph
+                    scale_ratio_x /= 1 + ((sizeerror + increaser) / destmaxsize)
+                    self.sourceFont.paste()
+                    self.sourceFont[currentSourceFontGlyph].transform(psMat.scale(scale_ratio_x, scale_ratio_y))
+                    self.sourceFont[currentSourceFontGlyph].round()
 
             # We pasted and scaled now we want to align/move
             # Use the dimensions from the newly pasted and stretched glyph to avoid any rounding errors
@@ -1618,12 +1635,17 @@ class font_patcher:
             elif sym_attr['align']:
                 # First find the baseline x-alignment (left alignment amount)
                 x_align_distance = self.font_dim['xmin'] - sym_dim['xmin']
+                if self.args.nonmono and 'pa' in stretch:
+                    cell_width = sym_dim['advance'] or sym_dim['width']
+                else:
+                    cell_width = self.font_dim['width']
                 if sym_attr['align'] == 'c':
                     # Center align
-                    x_align_distance += (self.font_dim['width'] / 2) - (sym_dim['width'] / 2)
+                    x_align_distance += (cell_width / 2) - (sym_dim['width'] / 2)
                 elif sym_attr['align'] == 'r':
                     # Right align
-                    x_align_distance += self.font_dim['width'] * self.get_target_width(stretch) - sym_dim['width']
+                    # (not really supported with pa scaling and 2x stretch in NFP)
+                    x_align_distance += cell_width * self.get_target_width(stretch) - sym_dim['width']
                 if not overlap:
                     # If symbol glyph is wider than target font cell, just left-align
                     x_align_distance = max(self.font_dim['xmin'] - sym_dim['xmin'], x_align_distance)
@@ -1679,7 +1701,7 @@ class font_patcher:
             # Check if the inserted glyph is scaled correctly for monospace
             if self.args.single:
                 (xmin, _, xmax, _) = self.sourceFont[currentSourceFontGlyph].boundingBox()
-                if int(xmax - xmin) > self.font_dim['width'] * (1 + (overlap or 0)):
+                if (xmax - xmin) > self.font_dim['width'] * max(1, 1 + (overlap or 0)):
                     logger.warning("Scaled glyph %X wider than one monospace width (%d / %d (overlap %s))",
                         currentSourceFontGlyph, int(xmax - xmin), self.font_dim['width'], repr(overlap))
 
