@@ -730,7 +730,7 @@ class font_patcher:
             "* Website: https://www.nerdfonts.com\n"
             "* Version: " + version + "\n"
             "* Development Website: https://github.com/ryanoasis/nerd-fonts\n"
-            "* Changelog: https://github.com/ryanoasis/nerd-fonts/blob/-/changelog.md"
+            "* Added icons' authors and copyright: https://github.com/ryanoasis/nerd-fonts/blob/-/src/glyphs/README.md"
         )
 
         familyname = replace_font_name(familyname, reservedFontNameReplacements)
